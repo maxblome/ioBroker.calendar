@@ -55,8 +55,8 @@
         "main": "main.js",
         "icon": "calendar.png",
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/Author/ioBroker.template/master/admin/template.png",
-        "readme": "https://github.com/Author/ioBroker.template/blob/master/README.md",
+        "extIcon": "https://raw.githubusercontent.com/WLAN-Kabel/ioBroker.calendar/master/admin/calendar.png",
+        "readme": "https://github.com/WLAN-Kabel/ioBroker.calendar/blob/master/README.md",
         "loglevel": "info",
         "restartAdapters": [
             "vis"
