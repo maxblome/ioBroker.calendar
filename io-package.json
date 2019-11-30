@@ -18,28 +18,28 @@
         },
         "title": "Calendar",
         "titleLang": {
-            "en": "Template (JavaScript with VIS)",
-            "de": "Vorlage (JavaScript mit VIS)",
-            "ru": "Шаблон (JavaScript с VIS)",
-            "pt": "Modelo (JavaScript com VIS)",
-            "nl": "Sjabloon (JavaScript met VIS)",
-            "fr": "Modèle (JavaScript avec VIS)",
-            "it": "Modello (JavaScript con VIS)",
-            "es": "Plantilla (JavaScript con VIS)",
-            "pl": "Szablon (JavaScript z VIS)",
-            "zh-cn": "模板（JavaScript和VIS）"
+            "en": "Calendar",
+            "de": "Kalender",
+            "ru": "Календарь",
+            "pt": "Calendário",
+            "nl": "Kalender",
+            "fr": "Calendrier",
+            "it": "Calendario",
+            "es": "Calendario",
+            "pl": "Kalendarz",
+            "zh-cn": "日历"
         },
         "desc": {
-            "en": "Template for adapter development",
-            "de": "Vorlage für die Adapterentwicklung",
-            "ru": "Шаблон для разработки адаптера",
-            "pt": "Modelo para desenvolvimento de adaptadores",
-            "nl": "Sjabloon voor adapterontwikkeling",
-            "fr": "Modèle pour le développement de l'adaptateur",
-            "it": "Modello per lo sviluppo dell'adattatore",
-            "es": "Plantilla para desarrollo de adaptadores",
-            "pl": "Szablon do opracowania adaptera",
-            "zh-cn": "适配器开发的模板"
+            "en": "Connect to google and outlook calendar",
+            "de": "Stellen Sie eine Verbindung zu Google und Outlook Kalender her",
+            "ru": "Подключиться к Google и Outlook календаря",
+            "pt": "Conecte-se ao calendário do Google e do Outlook",
+            "nl": "Maak verbinding met Google en Outlook-agenda",
+            "fr": "Connectez-vous à Google et au calendrier Outlook",
+            "it": "Collegati a Google e Outlook Calendar",
+            "es": "Conéctese al calendario de Google y Outlook",
+            "pl": "Połącz się z Google i kalendarzem Outlook",
+            "zh-cn": "连接到Google和Outlook日历"
         },
         "authors": [
             "WLAN-Kabel wlan-kabel@outlook.de"
@@ -61,25 +61,25 @@
         "restartAdapters": [
             "vis"
         ],
-        "localLink": "%web_protocol%://%ip%:%web_port%/vis/edit.html",
+        "localLink": "%web_protocol%://%ip%:%web_port%",
         "mode": "daemon",
-        "type": "general",
+        "type": "date-and-time",
         "compact": true,
         "materialize": true,
         "materializeTab": true,
         "adminTab": {
             "singleton": true,
             "name": {
-                "en": "Template (JavaScript with VIS)",
-                "de": "Vorlage (JavaScript mit VIS)",
-                "ru": "Шаблон (JavaScript с VIS)",
-                "pt": "Modelo (JavaScript com VIS)",
-                "nl": "Sjabloon (JavaScript met VIS)",
-                "fr": "Modèle (JavaScript avec VIS)",
-                "it": "Modello (JavaScript con VIS)",
-                "es": "Plantilla (JavaScript con VIS)",
-                "pl": "Szablon (JavaScript z VIS)",
-                "zh-cn": "模板（JavaScript和VIS）"
+                "en": "Calendar",
+                "de": "Kalender",
+                "ru": "Календарь",
+                "pt": "Calendário",
+                "nl": "Kalender",
+                "fr": "Calendrier",
+                "it": "Calendario",
+                "es": "Calendario",
+                "pl": "Kalendarz",
+                "zh-cn": "日历"
             },
             "link": "",
             "fa-icon": "info"
@@ -94,7 +94,13 @@
     },
     "native": {
         "option1": true,
-        "option2": "42"
+        "option2": "42",
+        "port": 8088,
+        "auth": false,
+        "secure": false,
+        "bind": "0.0.0.0",
+        "defaultUser": "admin",
+        "style": ""
     },
     "objects": [],
     "instanceObjects": []
