@@ -9,9 +9,16 @@
 const utils = require('@iobroker/adapter-core');
 
 // Load your modules here, e.g.:
-// const fs = require("fs");
+const express = require('express');
+const fs = require('fs');
+const http = require('http');
 
-class Template extends utils.Adapter {
+let adapter;
+
+let socketUrl;
+let ownSocket;
+
+class Calendar extends utils.Adapter {
 
     /**
      * @param {Partial<ioBroker.AdapterOptions>} [options={}]
@@ -19,7 +26,7 @@ class Template extends utils.Adapter {
     constructor(options) {
         super({
             ...options,
-            name: 'template',
+            name: 'calendar',
         });
         this.on('ready', this.onReady.bind(this));
         this.on('objectChange', this.onObjectChange.bind(this));
@@ -32,12 +39,26 @@ class Template extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        // Initialize your adapter here
+        // Initialize your adapter hereiobroker
 
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
         this.log.info('config option1: ' + this.config.option1);
         this.log.info('config option2: ' + this.config.option2);
+
+        // information about connected socket.io adapter
+        if (this.config.socketio && this.config.socketio.match(/^system\.adapter\./)) {
+            this.getForeignObject(this.config.socketio, function (err, obj) {
+                if (obj && obj.common && obj.common.enabled && obj.native) socketUrl = ':' + obj.native.port;
+            });
+            // Listen for changes
+            this.subscribeForeignObjects(this.config.socketio);
+        } else {
+            socketUrl = this.config.socketio;
+            ownSocket = (socketUrl != 'none');
+        }
+
+        initWebServer(adapter.config);
 
         /*
         For every state in the system there has to be also an object of type state
@@ -141,7 +162,91 @@ class Template extends utils.Adapter {
     // 	}
     // }
 
+    
+
 }
+
+function initWebServer(settings) {
+
+    let server;
+    const clientID = '990479440387-osl8j2k8q22851qalmke0j962jselom2.apps.googleusercontent.com';
+
+    if(settings.port) {
+
+        server = {
+            app:       express(),
+            server:    null,
+            io:        null,
+            settings:  settings
+        };
+        
+        server.app.get('/login', function (req, res) {
+            res.redirect('https://accounts.google.com/o/oauth2/v2/auth?client_id=' + clientID +
+                                                            '&redirect_uri=http://localhost:' + settings.port + '/' +
+                                                            '&scope=https://www.googleapis.com/auth/calendar' +
+                                                            '&state=1' +
+                                                            '&include_granted_scopes=true' +
+                                                            '&response_type=token');
+        });
+
+        server.app.get('/success', function (req, res) {
+            res.send('Done');
+        });
+
+        server.app.get('/', function (req, res) {
+            console.log(req.originalUrl);
+            console.log(req.params);
+            console.log(req.query);
+            console.log(req.path);
+            console.log(req.url);
+        
+            const buffer = fs.readFileSync(__dirname + '/www/index.html');
+        
+            if (buffer === null || buffer === undefined) {
+                res.contentType('text/html');
+                res.send('File not found', 404);
+            } else {
+                // Store file in cache
+                res.contentType('text/html');
+                res.send(buffer.toString());
+            }
+        });
+
+        server.server = http.createServer(server.app);
+    } else {
+        adapter.log.error('port missing');
+        process.exit(1);
+    }
+
+    if(server && server.server) {
+        adapter.getPort(settings.port, function (port) {
+            if (port != settings.port && !adapter.config.findNextPort) {
+                adapter.log.error('port ' + settings.port + ' already in use');
+                process.exit(1);
+            }
+
+            server.server.listen(port);
+
+            const host = server.server.address();
+
+            console.log('Please try to grant permission on http://%s', host);
+        });
+    }
+
+    if(server && server.app) {
+        return server;
+    } else {
+        return null;
+    }
+}
+
+function startAdapter(options) {
+
+    adapter = new Calendar(options);
+
+    return adapter;
+}
+
 
 // @ts-ignore parent is a valid property on module
 if (module.parent) {
@@ -149,8 +254,8 @@ if (module.parent) {
     /**
      * @param {Partial<ioBroker.AdapterOptions>} [options={}]
      */
-    module.exports = (options) => new Template(options);
+    module.exports = (options) => startAdapter(options);
 } else {
     // otherwise start the instance directly
-    new Template();
+    startAdapter();
 }
