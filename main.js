@@ -12,11 +12,15 @@ const utils = require('@iobroker/adapter-core');
 const express = require('express');
 const fs = require('fs');
 const http = require('http');
+const cron = require('node-cron');
+const os = require('os');
+const request = require('request');
+const {google} = require('googleapis');
 
 let adapter;
 
-let socketUrl;
-let ownSocket;
+let oauth2;
+const googleScope = 'https://www.googleapis.com/auth/calendar';
 
 class Calendar extends utils.Adapter {
 
@@ -41,24 +45,63 @@ class Calendar extends utils.Adapter {
     async onReady() {
         // Initialize your adapter hereiobroker
 
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
-        // this.config:
-        this.log.info('config option1: ' + this.config.option1);
-        this.log.info('config option2: ' + this.config.option2);
+        if (!adapter.config.ip) {
+            const ifaces = os.networkInterfaces();
+            for (const eth in ifaces) {
+                if (!ifaces.hasOwnProperty(eth)) continue;
+                for (let num = 0; num < ifaces[eth].length; num++) {
+                    if (ifaces[eth][num].family !== 'IPv6' && ifaces[eth][num].address !== '127.0.0.1' && ifaces[eth][num].address !== '0.0.0.0') {
+                        adapter.config.ip = ifaces[eth][num].address;
+                        break;
+                    }
+                }
+                if (adapter.config.ip) break;
+            }
+        }
+        
+        if(adapter.config.calendars) {
 
-        // information about connected socket.io adapter
-        if (this.config.socketio && this.config.socketio.match(/^system\.adapter\./)) {
-            this.getForeignObject(this.config.socketio, function (err, obj) {
-                if (obj && obj.common && obj.common.enabled && obj.native) socketUrl = ':' + obj.native.port;
-            });
-            // Listen for changes
-            this.subscribeForeignObjects(this.config.socketio);
-        } else {
-            socketUrl = this.config.socketio;
-            ownSocket = (socketUrl != 'none');
+            for(const calendar in adapter.config.calendars) {
+
+                if(calendar.provider == 'Google') {
+                    if(!calendar.refreshToken) {
+                        const workflow = initServer(adapter.config);
+                        adapter.log.warn('No permission granted for calendar "' + calendar.name + '". Please visit http://');
+                    }
+                }
+
+            }
+
         }
 
-        initWebServer(adapter.config);
+        registerGoogleAuthentication(adapter.config);
+
+        initServer(adapter.config);
+
+        cron.schedule('* * * * *', () => {
+
+            if(oauth2) {
+                const options = {
+                    url: 'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+                    method: 'GET',
+                    qs: {
+                        access_token: adapter.config.calendars[0].accessToken
+                    }
+                };
+
+                adapter.log.info(adapter.config.calendars[0].accessToken);
+                adapter.log.info(options.toString());
+
+                request(options, (err, res, body) => {
+                    adapter.log.info(body);
+                    if(err) return adapter.log.error('Can\'t read calendar list');
+                    
+                    if(res.statusCode == 200) {
+                        adapter.log.info(body);
+                    }
+                });
+            }
+        });
 
         /*
         For every state in the system there has to be also an object of type state
@@ -166,39 +209,128 @@ class Calendar extends utils.Adapter {
 
 }
 
-function initWebServer(settings) {
+function registerGoogleAuthentication(settings) {
+    if(settings.googleClientID && settings.googleClientSecret && settings.fqdn && settings.port)  {
+        oauth2 = new google.auth.OAuth2(settings.googleClientID, settings.googleClientSecret, `http://${settings.fqdn}:${settings.port}/google`);
+    } else adapter.log.warn('Client id, client secret, fqdn or port missing for google calendar.');
+}
+
+function initServer(settings) {
 
     let server;
-    const clientID = '990479440387-osl8j2k8q22851qalmke0j962jselom2.apps.googleusercontent.com';
 
     if(settings.port) {
 
         server = {
-            app:       express(),
-            server:    null,
-            io:        null,
+            app: express(),
+            server: null ,
             settings:  settings
         };
-        
-        server.app.get('/login', function (req, res) {
-            res.redirect('https://accounts.google.com/o/oauth2/v2/auth?client_id=' + clientID +
-                                                            '&redirect_uri=http://localhost:' + settings.port + '/' +
-                                                            '&scope=https://www.googleapis.com/auth/calendar' +
-                                                            '&state=1' +
-                                                            '&include_granted_scopes=true' +
-                                                            '&response_type=token');
-        });
 
-        server.app.get('/success', function (req, res) {
-            res.send('Done');
-        });
+        if(oauth2) {
+            server.app.get('/google/login/:id', function (req, res) {
+
+                const id = req.params.id;
+                
+                //Check if calendar id exists
+                if(id < settings.google.length && id >= 0) {
+
+                    const calendar = settings.google[id];
+
+                    //Check if a refresh token exists
+                    if(!calendar.refreshToken) {
+
+                        const url = oauth2.generateAuthUrl({
+                            scope: googleScope,
+                            //include_granted_scopes: true,
+                            state: id,
+                            //response_type: 'token',
+                            access_type: 'offline'
+                        });
+
+                        res.redirect(url);
+                    } else res.send(`The rights for calendar ${req.params.id} have already been granted.`); 
+                } else res.send(`Cannot find calendar ${req.params.id}.`);
+            });
+
+            server.app.get('/google/success', function (req, res) {
+                res.send('Done');
+            });
+
+            server.app.get('/google', function (req, res) {
+                if(req.query) {
+                    if(req.query.state) {
+                        if(req.query.state < settings.google.length && req.query.state >= 0) {
+                            if(req.query.scope) {
+                                const scope = req.query.scope.split(' ');
+                                let isRightScope = false;
+
+                                for(let i = 0; i < scope.length; i++) {
+                                    if(scope[i] == googleScope) {
+
+                                        settings.google[req.query.state].accessToken = req.query.access_token;
+
+                                        oauth2.getToken(req.query.code, function(err, tokens) {
+                                            if (err) {
+                                                adapter.log.error(err);
+                                                res.send(err);
+                                                return;
+                                            }
+                                        
+                                            adapter.log.info(`Received rights for google calendar ${req.query.state} (${settings.google[req.query.state].name})`);
+                                            
+                                            settings.google[req.query.state].oauth2 = oauth2;
+                                            settings.google[req.query.state].oauth2.setCredentials(tokens);
+
+                                            const cal = google.calendar({
+                                                version: 'v3',
+                                                auth: settings.google[req.query.state].oauth2
+                                            });
+                                            
+                                            cal.calendarList.list((err, res) => {
+                                                if (err) {
+                                                    adapter.log.error('The Google API returned an error.');
+                                                    adapter.log.error(err);
+                                                    return;
+                                                }
+
+                                                if(res) {
+                                                    const items = res.data.items;
+                                                    if(items) {
+                                                        if(items.length === 0) {
+                                                            adapter.log.warn('No accounts found.');
+                                                        } else {
+                                                            let accounts = [];
+                                                            for (let i = 0; i < items.length; i++) {
+                                                                accounts[i] = items[i].id;
+                                                            }
+
+                                                            adapter.log.info(accounts);
+                                                            adapter.log.info(accounts[0]);
+                                                            settings.google[req.query.state].accounts = accounts;
+                                                            adapter.log.info(settings.google[req.query.state].accounts);
+
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        });
+
+                                        isRightScope = true;
+                                    }
+                                }
+
+                                if(isRightScope) {
+                                    res.redirect('/google/success');
+                                } else res.send('Wrong scope were defined');
+                            } else res.send('No scope were defined');
+                        } else res.send(`Calendar ${req.query.state} not found`);
+                    } else res.send('No calendar defined');
+                } else res.send('No parameters were passed');            
+            });
+        }
 
         server.app.get('/', function (req, res) {
-            console.log(req.originalUrl);
-            console.log(req.params);
-            console.log(req.query);
-            console.log(req.path);
-            console.log(req.url);
         
             const buffer = fs.readFileSync(__dirname + '/www/index.html');
         
@@ -214,22 +346,17 @@ function initWebServer(settings) {
 
         server.server = http.createServer(server.app);
     } else {
-        adapter.log.error('port missing');
-        process.exit(1);
+        adapter.log.error('Port is missing');
     }
 
     if(server && server.server) {
         adapter.getPort(settings.port, function (port) {
             if (port != settings.port && !adapter.config.findNextPort) {
-                adapter.log.error('port ' + settings.port + ' already in use');
+                adapter.log.error('Port ' + settings.port + ' already in use');
                 process.exit(1);
             }
 
             server.server.listen(port);
-
-            const host = server.server.address();
-
-            console.log('Please try to grant permission on http://%s', host);
         });
     }
 
