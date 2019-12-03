@@ -93,14 +93,15 @@
         ]
     },
     "native": {
-        "option1": true,
-        "option2": "42",
-        "port": 8088,
-        "auth": false,
-        "secure": false,
-        "bind": "0.0.0.0",
-        "defaultUser": "admin",
-        "style": ""
+        "port": 8095,
+        "google": [
+            {
+              "name": "Calendar",
+              "account": "",
+              "accounts": [],
+              "color": ""
+            }
+        ]
     },
     "objects": [],
     "instanceObjects": []
