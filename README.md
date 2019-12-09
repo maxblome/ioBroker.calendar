@@ -1,20 +1,25 @@
 ![Logo](admin/calendar.png)
 # ioBroker.calendar
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.calendar)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.calendar)
+[![NPM version](http://img.shields.io/npm/v/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
 ![Number of Installations (latest)](http://iobroker.live/badges/calendar-installed.svg)
 ![Number of Installations (stable)](http://iobroker.live/badges/calendar-stable.svg)
-[![Dependency Status](https://img.shields.io/david/Author/iobroker.template.svg)](https://david-dm.org/WLAN-Kabel/iobroker.calendar)
-[![Known Vulnerabilities](https://snyk.io/test/github/Author/ioBroker.template/badge.svg)](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar)
+[![Dependency Status](https://img.shields.io/david/WLAN-Kabel/ioBroker.calendar.svg)](https://david-dm.org/WLAN-Kabel/iobroker.calendar)
+[![Known Vulnerabilities](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar/badge.svg)](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar)
 
-[![NPM](https://nodei.co/npm/iobroker.template.png?downloads=true)](https://nodei.co/npm/iobroker.calendar/)
+[![NPM](https://nodei.co/npm/iobroker.calendar.png?downloads=true)](https://nodei.co/npm/iobroker.calendar/)
 
-**Tests:**: [![Travis-CI](http://img.shields.io/travis/Author/ioBroker.template/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar)
+**Tests:**: [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar)
 
 ## Calendar adapter for ioBroker
 
-Read and edit your google or outlook caledar.
+Read your google calendar.
+
+## Todo
+* Add Outlook calendar
+* Add function to add events to calendar
+* Add vis widget
 
 ## Changelog
 
