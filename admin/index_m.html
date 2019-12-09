@@ -43,36 +43,17 @@
 
             var table = document.getElementById("google-values");
 
-            google = settings.google || [];
-            console.log(google);
-            values2table('google', google, onChange);
+            google = settings.google || [];          
 
             for (var c = 0; c < settings.google.length; c++) {
-
-                console.log(c + " " + settings.google[c].accounts);
-
                 settings.google[c].name = settings.google[c].name || '';
-                settings.google[c].account = settings.google[c].account || '';
+                settings.google[c].id = settings.google[c].id || '';
                 settings.google[c].color = settings.google[c].color || '';
-                settings.google[c].accounts = settings.google[c].accounts || [];
-                
-                var googleAccounts;
-
-                console.log("HIIIIIIIIIIIIIIIIER" + settings.google[c].accounts);
-
-                for(var i = 0; i < settings.google[c].accounts.length; i++) {
-                    googleAccounts += settings.google[c].accounts[i] + ';';
-                }
-
-                if(googleAccounts) {
-                    var cell = table.rows[c].cells[1];
-                    cell.setAttribute('data-options', googleAccounts || '');
-                }
             }
 
             onChange(false);
 
-            
+            values2table('google', google, onChange);
             
             // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
             if (M) M.updateTextFields();
@@ -97,10 +78,11 @@
         }
     </script>
     <style>
-        td:nth-of-type(2) {
-
+        td:nth-of-type(2), /* ID */
+        td:nth-of-type(3), /* E-Mail */
+        td:nth-of-type(4), /* Access Token */
+        td:nth-of-type(5) { /* Refresh Token */
             display: none;
-
         }
     </style>
 </head>
@@ -132,6 +114,14 @@
             </div>
             <div id="tab-google" class="col s12 page">
                 <div class="row">
+                </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        <input class="value" id="googleActive" type="checkbox"/>
+                        <span class="translate" for="googleActive">Activate Google calendar</span>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col s12 m6">
                         <input class="value" id="googleClientID" type="text"/>
                         <label class="translate" for="googleClientID">Client ID:</label>
@@ -152,9 +142,12 @@
                             <thead>
                                 <tr>
                                     <th data-name="name" class="translate">name</th>
-                                    <th data-name="account" data-type="select" class="translate">account</th>
-                                    <th data-name="accounts" data-type="text" style="display:none;">accounts</th>
-                                    <th data-name="color" data-type="color" class="translate">color</th>
+                                    <th data-name="id" style="display: none">id</th>
+                                    <th data-name="email" style="display: none">email</th>
+                                    <th data-name="accessToken" style="display: none">accessToken</th>
+                                    <th data-name="refreshToken" style="display: none">refreshToken</th>
+                                    <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
+                                    <!--<th data-name="color" data-type="color" class="translate">color</th> comming soon-->
                                     <th data-buttons="delete up down"></th>
                                 </tr>
                             </thead>
@@ -163,6 +156,9 @@
                 </div>
             </div>
             <div id="tab-microsoft" class="col s12 page">
+                <div class="col s12 m12" id="google">
+                    <p class="translate">Comming soon</p>
+                </div>
             </div>
         </div>
     </div>
