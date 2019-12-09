@@ -94,12 +94,13 @@
     },
     "native": {
         "port": 8095,
+        "googleActive": false,
         "google": [
             {
               "name": "Calendar",
-              "account": "",
-              "accounts": [],
-              "color": ""
+              "accessToken": "",
+              "refreshToken": "",
+              "id": ""
             }
         ]
     },
