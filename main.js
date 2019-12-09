@@ -13,8 +13,6 @@ const express = require('express');
 const fs = require('fs');
 const http = require('http');
 const cron = require('node-cron');
-const os = require('os');
-const request = require('request');
 const {google} = require('googleapis');
 
 let adapter;
@@ -45,70 +43,26 @@ class Calendar extends utils.Adapter {
     async onReady() {
         // Initialize your adapter hereiobroker
 
-        if (!adapter.config.ip) {
-            const ifaces = os.networkInterfaces();
-            for (const eth in ifaces) {
-                if (!ifaces.hasOwnProperty(eth)) continue;
-                for (let num = 0; num < ifaces[eth].length; num++) {
-                    if (ifaces[eth][num].family !== 'IPv6' && ifaces[eth][num].address !== '127.0.0.1' && ifaces[eth][num].address !== '0.0.0.0') {
-                        adapter.config.ip = ifaces[eth][num].address;
-                        break;
-                    }
-                }
-                if (adapter.config.ip) break;
-            }
-        }
-        
-        if(adapter.config.calendars) {
-
-            for(const calendar in adapter.config.calendars) {
-
-                if(calendar.provider == 'Google') {
-                    if(!calendar.refreshToken) {
-                        const workflow = initServer(adapter.config);
-                        adapter.log.warn('No permission granted for calendar "' + calendar.name + '". Please visit http://');
-                    }
-                }
-
-            }
-
+        if(this.config.googleActive) {
+            oauth2 = getGoogleAuthentication(adapter.config);
         }
 
-        registerGoogleAuthentication(adapter.config);
+        if(hasCalendarWithoutGrantPermission(adapter.config)) {
+            initServer(adapter.config);
+        }
 
-        initServer(adapter.config);
-
-        cron.schedule('* * * * *', () => {
-
+        if(this.config.googleActive) {
             if(oauth2) {
-                const options = {
-                    url: 'https://www.googleapis.com/calendar/v3/users/me/calendarList',
-                    method: 'GET',
-                    qs: {
-                        access_token: adapter.config.calendars[0].accessToken
-                    }
-                };
-
-                adapter.log.info(adapter.config.calendars[0].accessToken);
-                adapter.log.info(options.toString());
-
-                request(options, (err, res, body) => {
-                    adapter.log.info(body);
-                    if(err) return adapter.log.error('Can\'t read calendar list');
-                    
-                    if(res.statusCode == 200) {
-                        adapter.log.info(body);
-                    }
-                });
+                startCalendarSchedule(adapter.config, oauth2);
             }
-        });
+        }
 
         /*
         For every state in the system there has to be also an object of type state
         Here a simple template for a boolean variable named "testVariable"
         Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
         */
-        await this.setObjectAsync('testVariable', {
+        /*await this.setObjectNotExistsAsync('testVariable', {
             type: 'state',
             common: {
                 name: 'testVariable',
@@ -128,7 +82,7 @@ class Calendar extends utils.Adapter {
         you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
         */
         // the variable testVariable is set to true as command (ack=false)
-        await this.setStateAsync('testVariable', true);
+        /*await this.setStateAsync('testVariable', true);
 
         // same thing, but the value is flagged "ack"
         // ack should be always set to true if the value is received from or acknowledged from the target system
@@ -138,11 +92,11 @@ class Calendar extends utils.Adapter {
         await this.setStateAsync('testVariable', { val: true, ack: true, expire: 30 });
 
         // examples for the checkPassword/checkGroup functions
-        let result = await this.checkPasswordAsync('admin', 'iobroker');
+        /*let result = await this.checkPasswordAsync('admin', 'iobroker');
         this.log.info('check user admin pw ioboker: ' + result);
 
-        result = await this.checkGroupAsync('admin', 'admin');
-        this.log.info('check group user admin group admin: ' + result);
+        /*result = await this.checkGroupAsync('admin', 'admin');
+        this.log.info('check group user admin group admin: ' + result);*/
     }
 
     /**
@@ -151,7 +105,7 @@ class Calendar extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            this.log.info('cleaned everything up...');
+            //this.log.info('cleaned everything up...');
             callback();
         } catch (e) {
             callback();
@@ -205,14 +159,227 @@ class Calendar extends utils.Adapter {
     // 	}
     // }
 
-    
-
 }
 
-function registerGoogleAuthentication(settings) {
+function getDatetime(add = 0, hours = 0, mins = 0, secs = 0) {
+    // current timestamp in milliseconds
+    const dateObj = new Date();
+    dateObj.setDate(dateObj.getDate() + add);
+    dateObj.setHours(hours);
+    dateObj.setMinutes(mins);
+    dateObj.setSeconds(secs);
+    const date = (`0${dateObj.getDate()}`).slice(-2);
+    const month = (`0${dateObj.getMonth() + 1}`).slice(-2);
+    const year = dateObj.getFullYear();
+    const hour = (`0${dateObj.getHours()}`).slice(-2);
+    const min = (`0${dateObj.getMinutes()}`).slice(-2);
+    const sec = (`0${dateObj.getSeconds()}`).slice(-2);
+
+    // prints date & time in YYYY-MM-DD format 2011-06-03T10:00:00Z
+    return `${year}-${month}-${date}T${hour}:${min}:${sec}Z`;
+}
+
+async function updateConfig(newConfig) {
+    // Create the config object
+    const config = {
+        ...adapter.config,
+        ...newConfig,
+    };
+    // Update the adapter object
+    const adapterObj = await adapter.getForeignObjectAsync(`system.adapter.${adapter.namespace}`);
+    adapterObj.native = config;
+    await adapter.setForeignObjectAsync(`system.adapter.${adapter.namespace}`, adapterObj);
+}
+
+function startCalendarSchedule(config, auth) {
+
+    const googleCalendars = config.google;
+    
+    for(let i = 0; i < googleCalendars.length; i++) {
+        getGoogleCalendarEvents(googleCalendars[i], auth);
+    }
+
+    cron.schedule('*/5 * * * *', () => {
+        for(let i = 0; i < googleCalendars.length; i++) {
+            getGoogleCalendarEvents(googleCalendars[i], auth, i);
+        }
+    });
+}
+
+function sameDate(targetDate, calendarDate) {
+
+    targetDate = targetDate.substr(0, 10);
+    calendarDate = calendarDate.substr(0, 10);
+
+    if(targetDate == calendarDate) {
+        return true;
+    } else return false;
+}
+
+function getGoogleCalendarEvents(calendar, auth, index) {
+
+    if(calendar.accessToken && calendar.refreshToken) {
+
+        const oauth2 = auth;
+        oauth2.setCredentials({
+            access_token: calendar.accessToken,
+            refresh_token: calendar.refreshToken
+        });
+
+        const cal = google.calendar({
+            version: 'v3',
+            auth: oauth2
+        });
+
+        cal.events.list({
+            calendarId: calendar.email,
+            timeMin: getDatetime(),
+            timeMax: getDatetime((calendar.days > 0) ? calendar.days : 7, 23, 59, 59)
+        }, (err, res) => {
+            if (err) {
+                adapter.log.error(`The Google API returned an error. Affected calendar: ${calendar.name}`);
+                adapter.log.error(err);
+                return;
+            }
+
+            if(res) {
+                const items = res.data.items;
+                if(items) {
+
+                    let dayCount = new Map();
+
+                    for (let i = 0; i < items.length; i++) {
+
+                        //adapter.log.info(JSON.stringify(items[i]));
+
+                        for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
+
+                            if(sameDate(getDatetime(j), (items[i].start.date) ? items[i].start.date : items[i].start.dateTime)) {
+
+                                let objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}.`;
+
+                                adapter.setObjectNotExistsAsync(objNamespace + `summary`, {
+                                    type: 'state',
+                                    common: {
+                                        name: 'Summary',
+                                        type: 'string',
+                                        role: 'calendar.summary',
+                                        read: false,
+                                        write: false
+                                    },
+                                    native: {},
+                                });
+                                
+                                adapter.setObjectNotExistsAsync(objNamespace + `description`, {
+                                    type: 'state',
+                                    common: {
+                                        name: 'Description',
+                                        type: 'string',
+                                        role: 'calendar.description',
+                                        read: false,
+                                        write: false
+                                    },
+                                    native: {},
+                                });
+
+                                adapter.setObjectNotExistsAsync(objNamespace + `startTime`, {
+                                    type: 'state',
+                                    common: {
+                                        name: 'Start Time',
+                                        type: 'string',
+                                        role: 'calendar.startTime',
+                                        read: false,
+                                        write: false
+                                    },
+                                    native: {},
+                                });
+
+                                adapter.setObjectNotExistsAsync(objNamespace + `endTime`, {
+                                    type: 'state',
+                                    common: {
+                                        name: 'End Time',
+                                        type: 'string',
+                                        role: 'calendar.endTime',
+                                        read: false,
+                                        write: false
+                                    },
+                                    native: {},
+                                });
+            
+                                adapter.setStateAsync(objNamespace + `summary`, { val: items[i].summary, ack: true });
+                                adapter.setStateAsync(objNamespace + `description`, { val: items[i].description, ack: true });
+                                adapter.setStateAsync(objNamespace + `startTime`, { val: (items[i].start.date) ? items[i].start.date : items[i].start.dateTime, ack: true });
+                                adapter.setStateAsync(objNamespace + `endTime`, { val: (items[i].end.date) ? items[i].end.date : items[i].end.dateTime, ack: true });
+
+                                dayCount.set(j, (dayCount.get(j) > 0) ? dayCount.get(j) + 1: 1);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.google.fqdn}:${adapter.config.port}/google/login/${index}`);
+}
+
+function hasCalendarWithoutGrantPermission(config) {
+
+    if(config.googleActive) {
+
+        const googleCalendars = config.google;
+
+        for(let i = 0; i < googleCalendars.length; i++) {
+            if(!googleCalendars[i].accessToken || !googleCalendars[i].refreshToken) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function getGoogleAuthentication(settings) {
+
+    let oauth2 = null;
+
     if(settings.googleClientID && settings.googleClientSecret && settings.fqdn && settings.port)  {
         oauth2 = new google.auth.OAuth2(settings.googleClientID, settings.googleClientSecret, `http://${settings.fqdn}:${settings.port}/google`);
     } else adapter.log.warn('Client id, client secret, fqdn or port missing for google calendar.');
+
+    return oauth2;
+}
+
+function getGoogleCalendarId(index, auth, callback) {
+
+    let id = [];
+
+    const cal = google.calendar({
+        version: 'v3',
+        auth: auth
+    });
+
+    cal.calendarList.list((err, res) => {
+        if (err) {
+            adapter.log.error('The Google API returned an error.');
+            adapter.log.error(err);
+            callback(id);
+        }
+
+        if(res) {
+            const items = res.data.items;
+            if(items) {
+                if(items.length === 0) {
+                    adapter.log.warn('No calendar id found.');
+                } else {
+                    const calendarId = items[0].id || '';
+
+                    id.push(calendarId);
+                    id.push(new Buffer(calendarId).toString('base64').replace('=', '').replace('+', '').replace('/', ''));
+
+                    callback(id);
+                }
+            }
+        }
+    });
 }
 
 function initServer(settings) {
@@ -264,11 +431,9 @@ function initServer(settings) {
                             if(req.query.scope) {
                                 const scope = req.query.scope.split(' ');
                                 let isRightScope = false;
-
+                                
                                 for(let i = 0; i < scope.length; i++) {
                                     if(scope[i] == googleScope) {
-
-                                        settings.google[req.query.state].accessToken = req.query.access_token;
 
                                         oauth2.getToken(req.query.code, function(err, tokens) {
                                             if (err) {
@@ -279,40 +444,35 @@ function initServer(settings) {
                                         
                                             adapter.log.info(`Received rights for google calendar ${req.query.state} (${settings.google[req.query.state].name})`);
                                             
-                                            settings.google[req.query.state].oauth2 = oauth2;
-                                            settings.google[req.query.state].oauth2.setCredentials(tokens);
-
-                                            const cal = google.calendar({
-                                                version: 'v3',
-                                                auth: settings.google[req.query.state].oauth2
-                                            });
+                                            //settings.google[req.query.state].oauth2 = oauth2;
+                                            oauth2.setCredentials(tokens);
                                             
-                                            cal.calendarList.list((err, res) => {
-                                                if (err) {
-                                                    adapter.log.error('The Google API returned an error.');
-                                                    adapter.log.error(err);
-                                                    return;
-                                                }
+                                            getGoogleCalendarId(req.query.state, oauth2, (id) => {
 
-                                                if(res) {
-                                                    const items = res.data.items;
-                                                    if(items) {
-                                                        if(items.length === 0) {
-                                                            adapter.log.warn('No accounts found.');
-                                                        } else {
-                                                            let accounts = [];
-                                                            for (let i = 0; i < items.length; i++) {
-                                                                accounts[i] = items[i].id;
-                                                            }
+                                                let configGoogle = adapter.config.google;
+                                                
+                                                configGoogle[req.query.state].id = id[1];
+                                                configGoogle[req.query.state].email = id[0];
+                                                configGoogle[req.query.state].accessToken = tokens.access_token;
+                                                configGoogle[req.query.state].refreshToken = tokens.refresh_token;
 
-                                                            adapter.log.info(accounts);
-                                                            adapter.log.info(accounts[0]);
-                                                            settings.google[req.query.state].accounts = accounts;
-                                                            adapter.log.info(settings.google[req.query.state].accounts);
+                                                adapter.setObjectNotExistsAsync(id[1] + '.email', {
+                                                    type: 'state',
+                                                    common: {
+                                                        name: 'E-Mail',
+                                                        type: 'string',
+                                                        role: 'email',
+                                                        read: false,
+                                                        write: false
+                                                    },
+                                                    native: {},
+                                                });
+                            
+                                                adapter.setStateAsync(id[1] + '.email', { val: id[0], ack: true });
 
-                                                        }
-                                                    }
-                                                }
+                                                updateConfig({
+                                                    google: configGoogle
+                                                });
                                             });
                                         });
 
@@ -329,21 +489,7 @@ function initServer(settings) {
                 } else res.send('No parameters were passed');            
             });
         }
-
-        server.app.get('/', function (req, res) {
         
-            const buffer = fs.readFileSync(__dirname + '/www/index.html');
-        
-            if (buffer === null || buffer === undefined) {
-                res.contentType('text/html');
-                res.send('File not found', 404);
-            } else {
-                // Store file in cache
-                res.contentType('text/html');
-                res.send(buffer.toString());
-            }
-        });
-
         server.server = http.createServer(server.app);
     } else {
         adapter.log.error('Port is missing');
@@ -369,7 +515,9 @@ function initServer(settings) {
 
 function startAdapter(options) {
 
-    adapter = new Calendar(options);
+    const opts = options || {};
+
+    adapter = new Calendar(opts);
 
     return adapter;
 }
