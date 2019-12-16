@@ -38,7 +38,7 @@ Mac
 
     Comming soon ...
 
-You need an api key. Visit https://console.cloud.google.com/apis/dashboard an login with yout google account.
+You need an api key. Visit https://console.cloud.google.com/apis/dashboard and login with your google account.
 
 Open the list in the header and create a new project. Enter a project name like "ioBroker Calendar" and click create.
 
@@ -46,7 +46,7 @@ Make sure you have selected the right project from the list. Open the library ta
 
 Click "activate" and then click on "APIs & Services". Open the tab "OAuth consent screen" and type a application name like "ioBroker Calendar". You can also upload a logo, but this is not necessary.
 
-Open the "Credentials" tab, click the "Create credentials" dropdown and select "OAuth client ID". In the next step choose "Web application". Type a name like "ioBroker" or "Webclient". Add "http://<FQDN>:<Port from adapter config>" to authorised JavaScript origins. Add "http://<FQDN>:<Port from adapter config>/google" and "http://<FQDN>:<Port from adapter config>/google/" to Authorised redirect URIs.
+Open the "Credentials" tab, click the "Create credentials" dropdown and select "OAuth client ID". In the next step choose "Web application". Type a name like "ioBroker" or "Webclient". Add ```http://<FQDN>:<Port from adapter config>``` to authorised JavaScript origins. Add ```http://<FQDN>:<Port from adapter config>/google``` and ```http://<FQDN>:<Port from adapter config>/google/``` to Authorised redirect URIs.
 
 Create the client id and copy the displayed client ID and the client secret.
 
