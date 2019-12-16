@@ -1,99 +1,67 @@
-![Logo](admin/template.png)
-# ioBroker.template
+![Logo](admin/calendar.png)
+# ioBroker.calendar
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.template)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.template.svg)](https://www.npmjs.com/package/iobroker.template)
-![Number of Installations (latest)](http://iobroker.live/badges/template-installed.svg)
-![Number of Installations (stable)](http://iobroker.live/badges/template-stable.svg)
-[![Dependency Status](https://img.shields.io/david/Author/iobroker.template.svg)](https://david-dm.org/Author/iobroker.template)
-[![Known Vulnerabilities](https://snyk.io/test/github/Author/ioBroker.template/badge.svg)](https://snyk.io/test/github/Author/ioBroker.template)
+[![NPM version](http://img.shields.io/npm/v/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
+![Number of Installations (latest)](http://iobroker.live/badges/calendar-installed.svg)
+![Number of Installations (stable)](http://iobroker.live/badges/calendar-stable.svg)
+[![Dependency Status](https://img.shields.io/david/WLAN-Kabel/ioBroker.calendar.svg)](https://david-dm.org/WLAN-Kabel/iobroker.calendar)
+[![Known Vulnerabilities](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar/badge.svg)](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar)
 
-[![NPM](https://nodei.co/npm/iobroker.template.png?downloads=true)](https://nodei.co/npm/iobroker.template/)
+[![NPM](https://nodei.co/npm/iobroker.calendar.png?downloads=true)](https://nodei.co/npm/iobroker.calendar/)
 
-**Tests:**: [![Travis-CI](http://img.shields.io/travis/Author/ioBroker.template/master.svg)](https://travis-ci.org/Author/ioBroker.template)
+**Tests:**: [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar)
 
-## template adapter for ioBroker
+## Calendar adapter for ioBroker
 
-Template for adapter development
+Read your google calendar.
 
-## Developer manual
-This section is intended for the developer. It can be deleted later
+## Todo
+* Add Outlook calendar
+* Add function to add events to calendar
+* Add vis widget
 
-### Getting started
+## Google Authentication
+The following step is only needed if your ioBroker is installed on another computer/server and you cannot acces the webinterface via localhost.
 
-You are almost done, only a few steps left:
-1. Create a new repository on GitHub with the name `ioBroker.template`
-1. Initialize the current folder as a new git repository:  
-    ```bash
-    git init
-    git add .
-    git commit -m "Initial commit"
-    ```
-1. Link your local repository with the one on GitHub:  
-    ```bash
-    git remote add origin https://github.com/Author/ioBroker.template
-    ```
+### Windows:
 
-1. Push all files to the GitHub repo:  
-    ```bash
-    git push origin master
-    ```
-1. Head over to [main.js](main.js) and start programming!
+Run ```nodepad.exe``` with admin right and open the ```C:\Windows\System32\drivers\etc\hosts``` file.
+Add a entry like ```192.168.0.10    example.com //<IP-Adress ioBroker>     <FQDN>```
+Save the file and open the webinterface via the <FQDN> you have written in the hosts file. Example: http://example.com:8081
 
-### Scripts in `package.json`
-Several npm scripts are predefined for your convenience. You can run them using `npm run <scriptname>`
-| Script name | Description                                              |
-|-------------|----------------------------------------------------------|
-| `test:js`   | Executes the tests you defined in `*.test.js` files.     |
-| `test:package`    | Ensures your `package.json` and `io-package.json` are valid. |
-| `test` | Performs a minimal test run on package files and your tests. |
-| `coverage` | Generates code coverage using your test files. |
+### Linux:
 
-### Writing tests
-When done right, testing code is invaluable, because it gives you the 
-confidence to change your code while knowing exactly if and when 
-something breaks. A good read on the topic of test-driven development 
-is https://hackernoon.com/introduction-to-test-driven-development-tdd-61a13bc92d92. 
-Although writing tests before the code might seem strange at first, but it has very 
-clear upsides.
+    Comming soon ...
 
-The template provides you with basic tests for the adapter startup and package files.
-It is recommended that you add your own tests into the mix.
+### Mac
 
-### Publishing the adapter
-Since you have chosen GitHub Actions as your CI service, you can 
-enable automatic releases on npm whenever you push a new git tag that matches the form 
-`v<major>.<minor>.<patch>`. The necessary steps are described in `.github/workflows/test-and-release.yml`.
+    Comming soon ...
 
-To get your adapter released in ioBroker, please refer to the documentation 
-of [ioBroker.repositories](https://github.com/ioBroker/ioBroker.repositories#requirements-for-adapter-to-get-added-to-the-latest-repository).
+### Google API Key
+You need an api key. Visit https://console.cloud.google.com/apis/dashboard and login with your google account.
 
-### Test the adapter manually on a local ioBroker installation
-In order to install the adapter locally without publishing, the following steps are recommended:
-1. Create a tarball from your dev directory:  
-    ```bash
-    npm pack
-    ```
-1. Upload the resulting file to your ioBroker host
-1. Install it locally (The paths are different on Windows):
-    ```bash
-    cd /opt/iobroker
-    npm i /path/to/tarball.tgz
-    ```
+Open the list in the header and create a new project. Enter a project name like "ioBroker Calendar" and click create.
 
-For later updates, the above procedure is not necessary. Just do the following:
-1. Overwrite the changed files in the adapter directory (`/opt/iobroker/node_modules/iobroker.template`)
-1. Execute `iobroker upload template` on the ioBroker host
+Make sure you have selected the right project from the list. Open the library tab. Search for "Calendar" and click on "Google Calendar API".
+
+Click "activate" and then click on "APIs & Services". Open the tab "OAuth consent screen" and type a application name like "ioBroker Calendar". You can also upload a logo, but this is not necessary.
+
+Open the "Credentials" tab, click the "Create credentials" dropdown and select "OAuth client ID". In the next step choose "Web application". Type a name like "ioBroker" or "Webclient". Add ```http://<FQDN>:<Port from adapter config>``` to authorised JavaScript origins. Add ```http://<FQDN>:<Port from adapter config>/google``` and ```http://<FQDN>:<Port from adapter config>/google/``` to Authorised redirect URIs.
+
+Create the client id and copy the displayed client ID and the client secret.
+
+Go to the adapter config an add the client ID and the client secret.
 
 ## Changelog
 
 ### 0.0.1
-* (Author) initial release
+* (WLAN-Kabel) Initial release
 
 ## License
 MIT License
 
-Copyright (c) 2019 Author <author@mail.com>
+Copyright (c) 2019 WLAN-Kabel <wlan-kabel@outlook.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
