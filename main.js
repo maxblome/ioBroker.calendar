@@ -10,7 +10,6 @@ const utils = require('@iobroker/adapter-core');
 
 // Load your modules here, e.g.:
 const express = require('express');
-const fs = require('fs');
 const http = require('http');
 const cron = require('node-cron');
 const {google} = require('googleapis');
@@ -196,7 +195,7 @@ function startCalendarSchedule(config, auth) {
     const googleCalendars = config.google;
     
     for(let i = 0; i < googleCalendars.length; i++) {
-        getGoogleCalendarEvents(googleCalendars[i], auth);
+        getGoogleCalendarEvents(googleCalendars[i], auth, i);
     }
 
     cron.schedule('*/5 * * * *', () => {
@@ -218,7 +217,7 @@ function sameDate(targetDate, calendarDate) {
 
 function getGoogleCalendarEvents(calendar, auth, index) {
 
-    if(calendar.accessToken && calendar.refreshToken) {
+    if(calendar.accessToken && calendar.refreshToken && calendar.refreshToken != '' && calendar.id != '') {
 
         const oauth2 = auth;
         oauth2.setCredentials({
@@ -318,7 +317,7 @@ function getGoogleCalendarEvents(calendar, auth, index) {
                 }
             }
         });
-    } else adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.google.fqdn}:${adapter.config.port}/google/login/${index}`);
+    } else adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.config.fqdn}:${adapter.config.port}/google/login/${index}`);
 }
 
 function hasCalendarWithoutGrantPermission(config) {
@@ -328,7 +327,7 @@ function hasCalendarWithoutGrantPermission(config) {
         const googleCalendars = config.google;
 
         for(let i = 0; i < googleCalendars.length; i++) {
-            if(!googleCalendars[i].accessToken || !googleCalendars[i].refreshToken) {
+            if(!googleCalendars[i].accessToken || !googleCalendars[i].refreshToken || googleCalendars[i].refreshToken == '') {
                 return true;
             }
         }
