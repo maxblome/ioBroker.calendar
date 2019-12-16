@@ -21,6 +21,33 @@ Read your google calendar.
 * Add function to add events to calendar
 * Add vis widget
 
+## Google Authentication
+The following step is only needed if your ioBroker is installed on another computer/server and you cannot acces the webinterface via localhost.
+
+Windows:
+
+    Run ```nodepad.exe``` with admin right and open the ```C:\Windows\System32\drivers\etc\hosts``` file.
+    Add a entry like ```192.168.0.10    example.com //<IP-Adress ioBroker>     <FQDN>```
+    Save the file and open the webinterface via the <FQDN> you have written in the hosts file. Example: http://example.com:8081
+
+Linux:
+
+    Comming soon ...
+
+Mac
+
+    Comming soon ...
+
+You need an api key. Visit https://console.cloud.google.com/apis/dashboard an login with yout google account.
+Open the list in the header and create a new project. Enter a project name like "ioBroker Calendar" and click create.
+Make sure you have selected the right project from the list. Open the library tab. Search for "Calendar" and click on "Google Calendar API".
+Click "activate" and then click on "APIs & Services". Open the tab "OAuth consent screen" and type a application name like "ioBroker Calendar". You can also upload a logo, but this is not necessary.
+Open the "Credentials" tab, click the "Create credentials" dropdown and select "OAuth client ID". In the next step choose "Web application". Type a name like "ioBroker" or "Webclient". Add "http://<FQDN>:<Port from adapter config>" to authorised JavaScript origins. Add "http://<FQDN>:<Port from adapter config>/google" and "http://<FQDN>:<Port from adapter config>/google/" to Authorised redirect URIs. Create the client id and copy the displayed client ID and the client secret.
+
+Go to the adapter config an add the client ID and the client secret.
+
+    If you have no access to your webinterface try to ping the <FQDN>.
+
 ## Changelog
 
 ### 0.0.1
