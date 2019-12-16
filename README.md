@@ -24,20 +24,21 @@ Read your google calendar.
 ## Google Authentication
 The following step is only needed if your ioBroker is installed on another computer/server and you cannot acces the webinterface via localhost.
 
-Windows:
+### Windows:
 
 Run ```nodepad.exe``` with admin right and open the ```C:\Windows\System32\drivers\etc\hosts``` file.
 Add a entry like ```192.168.0.10    example.com //<IP-Adress ioBroker>     <FQDN>```
 Save the file and open the webinterface via the <FQDN> you have written in the hosts file. Example: http://example.com:8081
 
-Linux:
+### Linux:
 
     Comming soon ...
 
-Mac
+### Mac
 
     Comming soon ...
 
+### Google API Key
 You need an api key. Visit https://console.cloud.google.com/apis/dashboard and login with your google account.
 
 Open the list in the header and create a new project. Enter a project name like "ioBroker Calendar" and click create.
