@@ -95,6 +95,7 @@
     "native": {
         "port": 8095,
         "googleActive": false,
+        "fqdn": "localhost",
         "google": [
             {
               "name": "Calendar",
