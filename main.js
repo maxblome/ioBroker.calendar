@@ -14,6 +14,9 @@ const http = require('http');
 const cron = require('node-cron');
 const {google} = require('googleapis');
 
+let cronJob;
+let server;
+
 let adapter;
 
 let oauth2;
@@ -47,7 +50,7 @@ class Calendar extends utils.Adapter {
         }
 
         if(hasCalendarWithoutGrantPermission(adapter.config)) {
-            initServer(adapter.config);
+            server = initServer(adapter.config);
         }
 
         if(this.config.googleActive) {
@@ -105,6 +108,17 @@ class Calendar extends utils.Adapter {
     onUnload(callback) {
         try {
             //this.log.info('cleaned everything up...');
+
+            if(cronJob) {
+                cronJob.stop();
+                adapter.log.debug('Cron job stopped');
+            }
+
+            if(server) {
+                server.server.close();
+                adapter.log.debug('Server stopped');
+            }
+
             callback();
         } catch (e) {
             callback();
@@ -140,24 +154,6 @@ class Calendar extends utils.Adapter {
             // this.log.info(`state ${id} deleted`);
         }
     }
-
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.message" property to be set to true in io-package.json
-    //  * @param {ioBroker.Message} obj
-    //  */
-    // onMessage(obj) {
-    // 	if (typeof obj === 'object' && obj.message) {
-    // 		if (obj.command === 'send') {
-    // 			// e.g. send email or pushover or whatever
-    // 			this.log.info('send command');
-
-    // 			// Send response in callback if required
-    // 			if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-    // 		}
-    // 	}
-    // }
-
 }
 
 function getDatetime(add = 0, hours = 0, mins = 0, secs = 0) {
@@ -198,7 +194,7 @@ function startCalendarSchedule(config, auth) {
         getGoogleCalendarEvents(googleCalendars[i], auth, i);
     }
 
-    cron.schedule('*/5 * * * *', () => {
+    cronJob = cron.schedule('*/5 * * * *', () => {
         for(let i = 0; i < googleCalendars.length; i++) {
             getGoogleCalendarEvents(googleCalendars[i], auth, i);
         }
