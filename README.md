@@ -10,7 +10,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.calendar.png?downloads=true)](https://nodei.co/npm/iobroker.calendar/)
 
-**Tests:**: [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar)
+**Tests:** [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar) [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/WLAN-Kabel/ioBroker.calendar?branch=master&svg=true)](https://ci.appveyor.com/project/WLANKabel/ioBroker-calendar/)
 
 ## Calendar adapter for ioBroker
 
