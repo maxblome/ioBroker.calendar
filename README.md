@@ -19,7 +19,7 @@ Read your google calendar.
 ## Todo
 * Add Outlook calendar
 * Add function to add events to calendar
-* Add vis widget
+* Extend  vis widget
 
 ## Google Authentication
 The following step is only needed if your ioBroker is installed on another computer/server and you cannot acces the webinterface via localhost.
@@ -55,13 +55,21 @@ Go to the adapter config an add the client ID and the client secret.
 
 ## Changelog
 
+### 0.1.0
+* (WLAN-Kabel) Added calendar widget
+* (WLAN-Kabel) Cron job and server will stopped on unload
+* (WLAN-Kabel) Fixed an issue where not all states were deleted
+* (WLAN-Kabel) Added some debug messages
+* (WLAN-Kabel) Removed adapter from state settings
+* (WLAN-Kabel) Fixed problem where series appointments were not loaded
+
 ### 0.0.1
 * (WLAN-Kabel) Initial release
 
 ## License
 MIT License
 
-Copyright (c) 2019 WLAN-Kabel <wlan-kabel@outlook.de>
+Copyright (c) 2019-2020 WLAN-Kabel <wlan-kabel@outlook.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

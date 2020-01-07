@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "0.0.1",
+        "version": "0.1.0",
         "news": {
+            "0.1.0": {
+                "en": "Added calendar widget\nCron job and server will stopped on unload\nFixed an issue where not all states were deleted\nAdded some debug messages\nRemoved adapter from state settings\nFixed problem where series appointments were not loaded",
+                "de": "Kalender-Widget hinzugefügt\nCron-Job und Server werden beim beenden gestoppt\nEs wurde ein Problem behoben, bei dem nicht alle States gelöscht wurden.\nEinige Debug-Meldungen wurden hinzugefügt.\nAdapter aus Stateeinstellungen entfernt.\nProblem behoben, bei dem Serien-Terminen nicht geladen wurden",
+                "ru": "Добавлен виджет календаря\nЗадание Cron и сервер будет остановлен при выгрузке\nИсправлена проблема, при которой не все состояния были удалены\nДобавлены некоторые сообщения отладки\nУдален адаптер из настроек состояний\nИсправлена проблема, когда встречались серии не загружен",
+                "pt": "Adicionado widget de calendário\nO trabalho e o servidor de cron serão interrompidos ao descarregar\nCorrigido um problema em que nem todos os estados foram excluídos\nAdicionadas algumas mensagens de depuração\nAdaptador removido das configurações de estado\nCorrigido problema em que os compromissos em série eram não carregado",
+                "nl": "Agendawidget toegevoegd\nCron-taak en server worden gestopt bij uitladen\nProbleem opgelost waarbij niet alle statussen werden verwijderd\nEnkele foutopsporingsberichten toegevoegd\nAdapter verwijderd uit statusinstellingen\nProbleem opgelost waarbij reeksafspraken waren niet geladen",
+                "fr": "Widget de calendrier ajouté\nLe travail Cron et le serveur seront arrêtés au déchargement\nCorrection d'un problème où tous les états n'étaient pas supprimés\nAjout de certains messages de débogage\nSuppression de l'adaptateur des paramètres d'état\nProblème résolu où les rendez-vous en série étaient pas chargé",
+                "it": "Widget calendario aggiunto\nIl processo cron e il server si sono arrestati allo scaricamento\nRisolto un problema per cui non tutti gli stati venivano eliminati\nAggiunti alcuni messaggi di debug\nAdattatore rimosso dalle impostazioni dello stato\nRisolto problema in cui erano presenti gli appuntamenti della serie non caricato",
+                "es": "Se agregó un widget de calendario\nEl trabajo Cron y el servidor se detendrán al descargar\nSe corrigió un problema en el que no se borraban todos los estados\nSe agregaron algunos mensajes de depuración\nSe eliminó el adaptador de la configuración de estado\nSe solucionó el problema donde las citas en serie eran sin cargar",
+                "pl": "Dodano widżet kalendarza\nZadanie Cron i serwer zatrzymują się przy rozładowaniu\nNaprawiono problem polegający na tym, że nie wszystkie stany zostały usunięte\nDodano niektóre komunikaty debugowania\nUsunięto adapter z ustawień stanu\nNaprawiono problem polegający na tym, że spotkania nie załadowano",
+                "zh-cn": "添加了日历小部件\nCron作业，服务器将在卸载时停止\\\\ n修复了并非删除所有状态的问题\\\\ n添加了一些调试消息\\\\ n从状态设置中删除了适配器\\\\ n修复了序列约会的问题未加载"
+            },
             "0.0.1": {
                 "en": "initial release",
                 "de": "Erstveröffentlichung",
@@ -30,16 +42,16 @@
             "zh-cn": "日历"
         },
         "desc": {
-            "en": "Connect to google and outlook calendar",
-            "de": "Stellen Sie eine Verbindung zu Google und Outlook Kalender her",
-            "ru": "Подключиться к Google и Outlook календаря",
-            "pt": "Conecte-se ao calendário do Google e do Outlook",
-            "nl": "Maak verbinding met Google en Outlook-agenda",
-            "fr": "Connectez-vous à Google et au calendrier Outlook",
-            "it": "Collegati a Google e Outlook Calendar",
-            "es": "Conéctese al calendario de Google y Outlook",
-            "pl": "Połącz się z Google i kalendarzem Outlook",
-            "zh-cn": "连接到Google和Outlook日历"
+            "en": "Connect to your google calendar",
+            "de": "Stellen Sie eine Verbindung zu Ihrem Google Kalender her",
+            "ru": "Подключитесь к своему календарю Google",
+            "pt": "Conecte-se ao seu calendário do Google",
+            "nl": "Maak verbinding met uw Google-agenda",
+            "fr": "Connectez-vous à votre calendrier Google",
+            "it": "Collegati al tuo calendario di Google",
+            "es": "Conéctate a tu calendario de google",
+            "pl": "Połącz się ze swoim kalendarzem Google",
+            "zh-cn": "连接到您的Google日历"
         },
         "authors": [
             "WLAN-Kabel wlan-kabel@outlook.de"

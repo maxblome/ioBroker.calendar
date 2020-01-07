@@ -1,7 +1,7 @@
 {
   "name": "iobroker.calendar",
-  "version": "0.0.1",
-  "description": "Connect to google and outlook calendar",
+  "version": "0.1.0",
+  "description": "Connect to google calendar",
   "author": {
     "name": "WLAN-Kabel",
     "email": "wlan-kabel@outlook.de"
