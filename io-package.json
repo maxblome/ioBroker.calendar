@@ -66,25 +66,6 @@
         "type": "date-and-time",
         "compact": true,
         "materialize": true,
-        "materializeTab": true,
-        "adminTab": {
-            "singleton": true,
-            "name": {
-                "en": "Calendar",
-                "de": "Kalender",
-                "ru": "Календарь",
-                "pt": "Calendário",
-                "nl": "Kalender",
-                "fr": "Calendrier",
-                "it": "Calendario",
-                "es": "Calendario",
-                "pl": "Kalendarz",
-                "zh-cn": "日历"
-            },
-            "link": "",
-            "fa-icon": "info"
-        },
-        "supportCustoms": true,
         "dependencies": [
             {
                 "js-controller": ">=1.4.2"
