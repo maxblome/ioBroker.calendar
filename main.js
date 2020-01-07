@@ -71,7 +71,7 @@ class Calendar extends utils.Adapter {
                 write: true,
             },
             native: {},
-        });
+        });*/
 
         // in this template all states changes inside the adapters namespace are subscribed
         this.subscribeStates('*');
@@ -119,10 +119,10 @@ class Calendar extends utils.Adapter {
     onObjectChange(id, obj) {
         if (obj) {
             // The object was changed
-            this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
+            // this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
         } else {
             // The object was deleted
-            this.log.info(`object ${id} deleted`);
+            // this.log.info(`object ${id} deleted`);
         }
     }
 
@@ -134,10 +134,10 @@ class Calendar extends utils.Adapter {
     onStateChange(id, state) {
         if (state) {
             // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            // this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
         } else {
             // The state was deleted
-            this.log.info(`state ${id} deleted`);
+            // this.log.info(`state ${id} deleted`);
         }
     }
 
@@ -215,6 +215,93 @@ function sameDate(targetDate, calendarDate) {
     } else return false;
 }
 
+function addChannel(id, name) {
+
+    //adapter.createChannel(device, id, {name: name});
+
+    adapter.setObjectNotExistsAsync(id, {
+        type: 'channel',
+        common: {
+            name: name,
+        },
+        native: {},
+    }).then((prom) => {
+        if(prom) adapter.log.debug('Channel added => ' + prom.id);
+    });
+}
+
+function addDevice(id, name) {
+    //adapter.createDevice(id, {name: name});
+    adapter.setObjectNotExistsAsync(id, {
+        type: 'device',
+        common: {
+            name: name,
+        },
+        native: {},
+    }).then((prom) => {
+        if(prom) adapter.log.debug('Device added => ' + prom.id);
+    });
+}
+
+function addState(id, name, type, role, value = null) {
+    adapter.setObjectNotExistsAsync(id, {
+        type: 'state',
+        common: {
+            name: name,
+            type: type,
+            role: role,
+            read: true,
+            write: false
+        },
+        native: {},
+    }).then((prom) => {
+        if(prom) adapter.log.debug('State added => ' + prom.id);
+    });
+    
+    adapter.setStateAsync(id, { val: (value || ''), ack: true });
+}
+
+/**
+ * Get the contact list.
+ * @param {Object} oldList The host of the Nexcloud server like https://nextcloud.example.com
+ * @param {Map} newList Username of the Nextcloud account
+ * @param {string} calendarId Password of the Nextcloud account
+ */
+function removeDeleted(oldList, newList, calendarId) {
+
+    for(let i = oldList.length - 1; i >= 0; i--) {
+        
+        if(oldList[i]._id.split('.')[2] == calendarId && oldList[i]._id.split('.')[4]) {
+            
+            let event = false;
+
+            for(let j of newList.keys()) {
+
+                if(oldList[i]._id.split('.')[3] == j) {
+
+                    for(let k = 0; k < newList.get(j); k++) {
+                        if(oldList[i]._id.split('.')[4] == k) {
+
+                            event = true;
+                        }
+                    }
+                }
+            }
+
+            if(event == false) {
+                adapter.log.debug(`Delete channel => ${oldList[i]._id}`);
+                adapter.delObject(oldList[i]._id);
+                adapter.getStates(oldList[i]._id + '*', (err, states) => {
+                    for (let id in states) {
+                        adapter.log.debug(`Delete state => ${id}`);
+                        adapter.delObject(id);
+                    }
+                });
+            }
+        }
+    }
+}
+
 function getGoogleCalendarEvents(calendar, auth, index) {
 
     if(calendar.accessToken && calendar.refreshToken && calendar.refreshToken != '' && calendar.id != '') {
@@ -233,7 +320,9 @@ function getGoogleCalendarEvents(calendar, auth, index) {
         cal.events.list({
             calendarId: calendar.email,
             timeMin: getDatetime(),
-            timeMax: getDatetime((calendar.days > 0) ? calendar.days : 7, 23, 59, 59)
+            timeMax: getDatetime((calendar.days > 0) ? calendar.days : 7, 23, 59, 59),
+            singleEvents: true,
+            orderBy: 'startTime'
         }, (err, res) => {
             if (err) {
                 adapter.log.error(`The Google API returned an error. Affected calendar: ${calendar.name}`);
@@ -245,75 +334,43 @@ function getGoogleCalendarEvents(calendar, auth, index) {
                 const items = res.data.items;
                 if(items) {
 
-                    let dayCount = new Map();
+                    const dayCount = new Map();
 
                     for (let i = 0; i < items.length; i++) {
 
                         //adapter.log.info(JSON.stringify(items[i]));
+                        addDevice(calendar.id, calendar.email);
+                        addState(`${calendar.id}.email`, 'Email', 'string', 'account.email', calendar.email);
 
                         for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
 
+                            addChannel(`${calendar.id}.${j}`, `Day ${j}`);
+
+                            //setOrUpdateObject(calendar.id + '.' + j, {type: 'channel'});
+
                             if(sameDate(getDatetime(j), (items[i].start.date) ? items[i].start.date : items[i].start.dateTime)) {
 
-                                let objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}.`;
+                                const objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`;
 
-                                adapter.setObjectNotExistsAsync(objNamespace + `summary`, {
-                                    type: 'state',
-                                    common: {
-                                        name: 'Summary',
-                                        type: 'string',
-                                        role: 'calendar.summary',
-                                        read: false,
-                                        write: false
-                                    },
-                                    native: {},
-                                });
-                                
-                                adapter.setObjectNotExistsAsync(objNamespace + `description`, {
-                                    type: 'state',
-                                    common: {
-                                        name: 'Description',
-                                        type: 'string',
-                                        role: 'calendar.description',
-                                        read: false,
-                                        write: false
-                                    },
-                                    native: {},
-                                });
+                                addChannel(objNamespace, `Event ${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`);
 
-                                adapter.setObjectNotExistsAsync(objNamespace + `startTime`, {
-                                    type: 'state',
-                                    common: {
-                                        name: 'Start Time',
-                                        type: 'string',
-                                        role: 'calendar.startTime',
-                                        read: false,
-                                        write: false
-                                    },
-                                    native: {},
-                                });
-
-                                adapter.setObjectNotExistsAsync(objNamespace + `endTime`, {
-                                    type: 'state',
-                                    common: {
-                                        name: 'End Time',
-                                        type: 'string',
-                                        role: 'calendar.endTime',
-                                        read: false,
-                                        write: false
-                                    },
-                                    native: {},
-                                });
-            
-                                adapter.setStateAsync(objNamespace + `summary`, { val: items[i].summary, ack: true });
-                                adapter.setStateAsync(objNamespace + `description`, { val: items[i].description, ack: true });
-                                adapter.setStateAsync(objNamespace + `startTime`, { val: (items[i].start.date) ? items[i].start.date : items[i].start.dateTime, ack: true });
-                                adapter.setStateAsync(objNamespace + `endTime`, { val: (items[i].end.date) ? items[i].end.date : items[i].end.dateTime, ack: true });
+                                addState(`${objNamespace}.summary`, 'Summary', 'string', 'event.summary', items[i].summary);
+                                addState(`${objNamespace}.description`, 'Description', 'string', 'event.description', items[i].description);
+                                addState(`${objNamespace}.startTime`, 'Start Time', 'string', 'event.startTime', (items[i].start.date || items[i].start.dateTime));
+                                addState(`${objNamespace}.endTime`, 'End Time', 'string', 'event.endTime', (items[i].end.date || items[i].end.dateTime));
 
                                 dayCount.set(j, (dayCount.get(j) > 0) ? dayCount.get(j) + 1: 1);
                             }
+
+                            addState(`${calendar.id}.${j}.date`, 'Date', 'string', 'calendar.date', getDatetime(j));
+                            addState(`${calendar.id}.${j}.events`, 'Event count', 'number', 'calendar.events', (dayCount.has(j)) ? dayCount.get(j) : '0');
                         }
                     }
+
+                    adapter.getChannels(function (err, channels) {
+                        if(err) adapter.log.error(err);
+                        removeDeleted(channels, dayCount, calendar.id);
+                    });
                 }
             }
         });
