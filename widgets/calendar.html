@@ -103,111 +103,54 @@
 
 var events = new Array();
 var date_memory;
+var color;
 
 // get current list
 function renderPage(wid) {
-vis.conn.getStates(wid + '*', function (err, states) {
+    vis.conn.getStates(wid + '*', function (err, states) {
 
-    //events = states;
+        //events = states;
 
-    for(var state in states) {
-        
-        if(state.endsWith("events")) {
+        for(var state in states) {
+            
+            if(state.endsWith("events")) {
 
-            var day = state.replace("events", "");
-            var eventCount = states[state].val;
+                var day = state.replace("events", "");
+                var eventCount = states[state].val;
 
-            var newDate = {};
-            newDate.date = states[day + "date"].val;
-            newDate.eventCount = eventCount;
+                var newDate = {};
+                newDate.date = states[day + "date"].val;
+                newDate.eventCount = eventCount;
 
-            var newArray = [];
+                var newArray = [];
 
-            for(var i = 0; i < eventCount; i++) {
-                var newEvent = {};
-                newEvent.description = states[day + i + ".description"].val
-                newEvent.endTime = states[day + i + ".endTime"].val
-                newEvent.startTime = states[day + i + ".startTime"].val
-                newEvent.summary = states[day + i + ".summary"].val
+                for(var i = 0; i < eventCount; i++) {
+                    var newEvent = {};
+                    newEvent.description = states[day + i + ".description"].val
+                    newEvent.endTime = states[day + i + ".endTime"].val
+                    newEvent.startTime = states[day + i + ".startTime"].val
+                    newEvent.summary = states[day + i + ".summary"].val
 
-                newArray.push(newEvent);
+                    newArray.push(newEvent);
+                }
+
+                newDate.events = newArray;
+                events.push(newDate);
+            } else if(state.endsWith("color")) {
+
+                color = states[state].val;
             }
-
-            newDate.events = newArray;
-            events.push(newDate);
         }
+    });
+}
+
+function colorizeEvents(color) {
+    var calendarEvents = document.getElementsByClassName("calendar-event")
+
+    for (var k = 0; k < calendarEvents.length; k++) {
+        calendarEvents[k].style.backgroundColor = color;
     }
-
-    /*var currentList = JSON.parse(states[bringListId[wid]].val);
-            var itemWoDescriptionReplaced = itemWoDescription.replace(/ /g, '_');
-            desc = desc ? desc : (item.split(',').length > 1) ? item.substring(item.indexOf(',') + 1).trim() : '';
-            var existence = document.getElementById(wid + '-' + itemWoDescriptionReplaced);
-            var currentDesc = existence ? existence.getAttribute('data-desc') : null;
-
-            // Translate to list language
-            var nameFromDict = bringDict[wid][itemWoDescription] ? bringDict[wid][itemWoDescription] : itemWoDescription;
-
-            // set state in backend - do this before existence check because description may have changed
-            vis.conn.setState(bringSaveId[wid], itemWoDescription + (desc ? ',' + desc : ''), false);
-
-            // if item is already on list --> return
-            for (var i = 0; i < currentList.length; i++) {
-                if (((currentList[i].name === itemWoDescription && currentList[i].specification === desc) && !removedLastFiveSeconds[wid][itemWoDescription])
-                    || (existence !== null && (desc === currentDesc))) return;
-            } // endFor
-
-            var alternative = nameFromDict.substring(0, 1).toLowerCase();
-            if (/^(ä|ö|ü)/g.test(alternative)) {
-                alternative = alternative.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue');
-            } // endIf
-
-            addedLastFiveSeconds[wid][item] = true;
-            setTimeout(function () {
-                addedLastFiveSeconds[wid][item] = false;
-            }, 5000);
-
-            // if item is there but description changed, remove item
-            if (currentDesc !== null && (desc !== currentDesc)) existence && existence.parentNode && existence.parentNode.removeChild(existence);
-
-            // if item exists in recent items --> remove it because it is now on active items list
-            $('#' + wid + '-recent_' + itemWoDescription.replace(/ /g, '_')).remove();
-
-            // add item instant to widget
-            var html = '<div class="bring-item" data-desc="' + desc + '" id=' + wid + '-' + itemWoDescriptionReplaced +
-                ' onclick="vis.binds[\'bring\'].onclick(this)" ' +
-                'style="max-width: ' + maxWidth + 'px; min-width: ' + maxWidth + 'px; ' +
-                'max-height: ' + maxWidth + 'px; min-height: ' + maxWidth + 'px;"' +
-                ' data-item="' + itemWoDescription.replace(/ /g, '_') + '"> ' +
-                '<img src="https://web.getbring.com/assets/images/items/' + itemWoDescriptionReplaced.toLowerCase()
-                    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue') + '.png" ' +
-                'onerror="this.src=\'https://web.getbring.com/assets/images/items/' + alternative + '.png\'" ' +
-                'alt=' + itemWoDescription + ' class="item-image" id="' + wid + '-img-' + itemWoDescriptionReplaced + '"' +
-                'style="height: calc(0.43 * ' + maxWidth + 'px); padding-top: calc(0.172 * ' + maxWidth + 'px)">' +
-                '<div class="item-name" style="height: calc(0.2013 * ' + maxWidth + 'px);' +
-                'margin-top: calc(-0.0431 * ' + maxWidth + 'px;">' +
-                nameFromDict +
-                '</div>' +
-                '<div class="item-desc" style="height: calc(0.2155 * ' + maxWidth + 'px);' +
-                'margin-top:calc(-0.0431 * ' + maxWidth + 'px);">' +
-                desc +
-                '</div></div>';
-
-            $('#' + wid + '-shoppinglist').append(html);
-
-            item = document.getElementById(wid + '-' + itemWoDescriptionReplaced);
-            try {
-                // resize item name
-                var resizeText = item.getElementsByClassName('item-name')[0];
-                textFit(resizeText, {maxFontSize: 0.112 * maxWidth, detectMultiLine: false});
-
-                // resize item desc
-                var resizeItemDesc = item.getElementsByClassName('item-desc')[0];
-                textFit(resizeItemDesc, {maxFontSize: 0.0948 * maxWidth, detectMultiLine: false});
-            } catch (e) {
-                console.warn(new Date().toLocaleTimeString() + ' Bring[' + wid + ']: Cannot resize text for item ' + wid + '-' + itemWoDescriptionReplaced + ': ' + e);
-            } // endCatch*/
-        });
-    }
+}
 
     function iniCalendar() {
         //heutiges Datum setzen
@@ -276,6 +219,8 @@ vis.conn.getStates(wid + '*', function (err, states) {
     
     //Events hinzufügen
     entry.appendChild(getEvents(y, m, zahl));
+
+    colorizeEvents(color);
 
     //Wenn Tag ein Feiertag ist
     /*if (isHoliday(m, zahl)) {

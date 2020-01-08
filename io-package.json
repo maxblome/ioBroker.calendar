@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "news": {
+            "0.2.0": {
+                "en": "Multiple calendar support for one account\nCalendar color is now supported\nCalender states color, name, account added\nCalendar name is set as the state name\nFixed an issue where the credentials were not properly controlled\nThe google calendar name and color will be adopted",
+                "de": "Unterstützung mehrerer Kalender für ein Konto\nKalenderfarbe wird jetzt unterstützt\nNeue Kalenderstates color, name und account\nDer Kalendername wird als Statename festgelegt\nEs wurde ein Problem behoben, bei dem die Anmeldeinformationen nicht richtig kontrolliert wurden\nDer Name und die Farbe des Google-Kalenders werden übernommen",
+                "ru": "Поддержка нескольких календарей для одного аккаунта\nЦвет календаря теперь поддерживается\nЦвета календарей, имя, учетная запись добавлены\nНазвание календаря устанавливается в качестве имени штата\nИсправлена ошибка, из-за которой учетные данные не контролировались должным образом\nНазвание и цвет календаря Google будут приняты",
+                "pt": "Suporte a vários calendários para uma conta\nA cor do calendário agora é suportada\nO calendário indica cor, nome e conta adicionados\nO nome do calendário é definido como o nome do estado\nCorrigido um problema em que as credenciais não eram controladas adequadamente\nO nome e a cor do calendário do Google serão adotados",
+                "nl": "Ondersteuning voor meerdere agenda's voor één account\nAgendakleur wordt nu ondersteund\nKalender vermeldt kleur, naam, account toegevoegd\nKalendernaam wordt ingesteld als de statusnaam\nProbleem opgelost waarbij de inloggegevens niet correct werden beheerd\nDe naam en kleur van de Google-agenda worden overgenomen",
+                "fr": "Prise en charge de plusieurs calendriers pour un seul compte\nLa couleur du calendrier est désormais prise en charge\nLe calendrier indique la couleur, le nom et le compte ajoutés\nLe nom du calendrier est défini comme le nom de l'état\nCorrection d'un problème où les informations d'identification n'étaient pas correctement contrôlées\nLe nom et la couleur du calendrier Google seront adoptés",
+                "it": "Supporto per più calendari per un account\nIl colore del calendario è ora supportato\nCalendario stati colore, nome, account aggiunto\nIl nome del calendario è impostato come nome dello stato\nRisolto il problema per cui le credenziali non erano controllate correttamente\nVerranno adottati il nome e il colore del calendario di Google",
+                "es": "Soporte de calendario múltiple para una cuenta\nEl color del calendario ahora es compatible\nCalendario indica color, nombre, cuenta agregada\nEl nombre del calendario se establece como el nombre del estado\nSe solucionó un problema por el cual las credenciales no se controlaban correctamente\nSe adoptarán el nombre y el color del calendario de Google.",
+                "pl": "Obsługa wielu kalendarzy dla jednego konta\nKolor kalendarza jest teraz obsługiwany\nKalendarz określa kolor, nazwę, konto dodane\nNazwa kalendarza jest ustawiona jako nazwa stanu\nNaprawiono problem polegający na tym, że poświadczenia nie były odpowiednio kontrolowane\nNazwa i kolor kalendarza google zostaną przyjęte",
+                "zh-cn": "一个帐户的多个日历支持\n现在支持日历颜色\n日历注明颜色，名称，添加的帐户\n日历名称设置为状态名称\n修复了凭据未正确控制的问题\nGoogle日历名称和颜色将被采用"
+            },
             "0.1.0": {
                 "en": "Added calendar widget\nCron job and server will stopped on unload\nFixed an issue where not all states were deleted\nAdded some debug messages\nRemoved adapter from state settings\nFixed problem where series appointments were not loaded",
                 "de": "Kalender-Widget hinzugefügt\nCron-Job und Server werden beim beenden gestoppt\nEs wurde ein Problem behoben, bei dem nicht alle States gelöscht wurden.\nEinige Debug-Meldungen wurden hinzugefügt.\nAdapter aus Stateeinstellungen entfernt.\nProblem behoben, bei dem Serien-Terminen nicht geladen wurden",
@@ -91,10 +103,14 @@
         "fqdn": "localhost",
         "google": [
             {
-              "name": "Calendar",
-              "accessToken": "",
-              "refreshToken": "",
-              "id": ""
+                "active": false,
+                "name": "",
+                "account": "",
+                "accessToken": "",
+                "refreshToken": "",
+                "id": "",
+                "email": "",
+                "color": "#000000"
             }
         ]
     },

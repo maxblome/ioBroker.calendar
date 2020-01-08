@@ -45,6 +45,13 @@ class Calendar extends utils.Adapter {
     async onReady() {
         // Initialize your adapter hereiobroker
 
+        if(!String.prototype.startsWith) {
+            String.prototype.startsWith = function(searchString, position) {
+                position = position || 0;
+                return this.indexOf(searchString, position) === position;
+            };
+        }
+
         if(this.config.googleActive) {
             oauth2 = getGoogleAuthentication(adapter.config);
         }
@@ -53,52 +60,28 @@ class Calendar extends utils.Adapter {
             server = initServer(adapter.config);
         }
 
+        for(let i = 0; i < adapter.config.google.length; i++) {
+
+            const calendar = adapter.config.google[i];
+
+            if(adapter.config.googleActive && calendar.active && calendar.id != '') {
+                addDevice(calendar.id, calendar.name);
+                addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.account);
+                addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
+                addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
+            } else {
+                removeDevice(calendar.id);
+            }
+        }
+
         if(this.config.googleActive) {
             if(oauth2) {
                 startCalendarSchedule(adapter.config, oauth2);
             }
         }
 
-        /*
-        For every state in the system there has to be also an object of type state
-        Here a simple template for a boolean variable named "testVariable"
-        Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-        */
-        /*await this.setObjectNotExistsAsync('testVariable', {
-            type: 'state',
-            common: {
-                name: 'testVariable',
-                type: 'boolean',
-                role: 'indicator',
-                read: true,
-                write: true,
-            },
-            native: {},
-        });*/
-
         // in this template all states changes inside the adapters namespace are subscribed
         this.subscribeStates('*');
-
-        /*
-        setState examples
-        you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-        */
-        // the variable testVariable is set to true as command (ack=false)
-        /*await this.setStateAsync('testVariable', true);
-
-        // same thing, but the value is flagged "ack"
-        // ack should be always set to true if the value is received from or acknowledged from the target system
-        await this.setStateAsync('testVariable', { val: true, ack: true });
-
-        // same thing, but the state is deleted after 30s (getState will return null afterwards)
-        await this.setStateAsync('testVariable', { val: true, ack: true, expire: 30 });
-
-        // examples for the checkPassword/checkGroup functions
-        /*let result = await this.checkPasswordAsync('admin', 'iobroker');
-        this.log.info('check user admin pw ioboker: ' + result);
-
-        /*result = await this.checkGroupAsync('admin', 'admin');
-        this.log.info('check group user admin group admin: ' + result);*/
     }
 
     /**
@@ -156,22 +139,25 @@ class Calendar extends utils.Adapter {
     }
 }
 
-function getDatetime(add = 0, hours = 0, mins = 0, secs = 0) {
+function getDatetime(add = 0, hours = 0, mins = 0, secs = 0, millisecs = 0) {
     // current timestamp in milliseconds
     const dateObj = new Date();
     dateObj.setDate(dateObj.getDate() + add);
     dateObj.setHours(hours);
     dateObj.setMinutes(mins);
     dateObj.setSeconds(secs);
-    const date = (`0${dateObj.getDate()}`).slice(-2);
+    dateObj.setMilliseconds(millisecs);
+    
+    /*const date = (`0${dateObj.getDate()}`).slice(-2);
     const month = (`0${dateObj.getMonth() + 1}`).slice(-2);
     const year = dateObj.getFullYear();
     const hour = (`0${dateObj.getHours()}`).slice(-2);
     const min = (`0${dateObj.getMinutes()}`).slice(-2);
     const sec = (`0${dateObj.getSeconds()}`).slice(-2);
-
+*/
     // prints date & time in YYYY-MM-DD format 2011-06-03T10:00:00Z
-    return `${year}-${month}-${date}T${hour}:${min}:${sec}Z`;
+    //return `${year}-${month}-${date}T${hour}:${min}:${sec}Z`;
+    return dateObj.toISOString();
 }
 
 async function updateConfig(newConfig) {
@@ -191,12 +177,16 @@ function startCalendarSchedule(config, auth) {
     const googleCalendars = config.google;
     
     for(let i = 0; i < googleCalendars.length; i++) {
-        getGoogleCalendarEvents(googleCalendars[i], auth, i);
+        if(googleCalendars[i].active) {
+            getGoogleCalendarEvents(googleCalendars[i], auth, i);
+        }
     }
 
     cronJob = cron.schedule('*/5 * * * *', () => {
         for(let i = 0; i < googleCalendars.length; i++) {
-            getGoogleCalendarEvents(googleCalendars[i], auth, i);
+            if(googleCalendars[i].active) {
+                getGoogleCalendarEvents(googleCalendars[i], auth, i);
+            }
         }
     });
 }
@@ -239,6 +229,34 @@ function addDevice(id, name) {
     });
 }
 
+function removeDevice(id) {
+
+    if(!id.startsWith(adapter.namespace)) {
+        id = adapter.namespace + '.' + id;
+    }
+
+    adapter.log.debug(`Delete device => ${id}`);
+    adapter.delObject(id);
+    
+    adapter.getChannels(id + '*', (err, states) => {
+        if(!err) {
+            for (let id in states) {
+                adapter.log.debug(`Delete channel => ${id}`);
+                adapter.delObject(id);
+            }
+        }
+    });
+
+    adapter.getStates(id + '*', (err, states) => {
+        if(!err) {
+            for (let id in states) {
+                adapter.log.debug(`Delete state => ${id}`);
+                adapter.delObject(id);
+            }
+        }
+    });
+}
+
 function addState(id, name, type, role, value = null) {
     adapter.setObjectNotExistsAsync(id, {
         type: 'state',
@@ -258,10 +276,10 @@ function addState(id, name, type, role, value = null) {
 }
 
 /**
- * Get the contact list.
- * @param {Object} oldList The host of the Nexcloud server like https://nextcloud.example.com
- * @param {Map} newList Username of the Nextcloud account
- * @param {string} calendarId Password of the Nextcloud account
+ * Remove deleted events.
+ * @param {Object} oldList
+ * @param {Map} newList
+ * @param {string} calendarId
  */
 function removeDeleted(oldList, newList, calendarId) {
 
@@ -300,9 +318,10 @@ function removeDeleted(oldList, newList, calendarId) {
 
 function getGoogleCalendarEvents(calendar, auth, index) {
 
-    if(calendar.accessToken && calendar.refreshToken && calendar.refreshToken != '' && calendar.id != '') {
+    if(calendar.accessToken /*&& calendar.refreshToken && calendar.refreshToken != ''*/ && calendar.id != '') {
 
         const oauth2 = auth;
+
         oauth2.setCredentials({
             access_token: calendar.accessToken,
             refresh_token: calendar.refreshToken
@@ -316,7 +335,7 @@ function getGoogleCalendarEvents(calendar, auth, index) {
         cal.events.list({
             calendarId: calendar.email,
             timeMin: getDatetime(),
-            timeMax: getDatetime((calendar.days > 0) ? calendar.days : 7, 23, 59, 59),
+            timeMax: getDatetime(((parseInt(calendar.days) > 0) ? parseInt(calendar.days) : 7), 23, 59, 59),
             singleEvents: true,
             orderBy: 'startTime'
         }, (err, res) => {
@@ -327,22 +346,18 @@ function getGoogleCalendarEvents(calendar, auth, index) {
             }
 
             if(res) {
+
                 const items = res.data.items;
+
                 if(items) {
 
                     const dayCount = new Map();
 
                     for (let i = 0; i < items.length; i++) {
 
-                        //adapter.log.info(JSON.stringify(items[i]));
-                        addDevice(calendar.id, calendar.email);
-                        addState(`${calendar.id}.email`, 'Email', 'string', 'account.email', calendar.email);
-
                         for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
 
                             addChannel(`${calendar.id}.${j}`, `Day ${j}`);
-
-                            //setOrUpdateObject(calendar.id + '.' + j, {type: 'channel'});
 
                             if(sameDate(getDatetime(j), (items[i].start.date) ? items[i].start.date : items[i].start.dateTime)) {
 
@@ -368,6 +383,8 @@ function getGoogleCalendarEvents(calendar, auth, index) {
                         removeDeleted(channels, dayCount, calendar.id);
                     });
                 }
+
+                adapter.log.info(`Updated calendar "${calendar.name}"`);
             }
         });
     } else adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.config.fqdn}:${adapter.config.port}/google/login/${index}`);
@@ -380,8 +397,10 @@ function hasCalendarWithoutGrantPermission(config) {
         const googleCalendars = config.google;
 
         for(let i = 0; i < googleCalendars.length; i++) {
-            if(!googleCalendars[i].accessToken || !googleCalendars[i].refreshToken || googleCalendars[i].refreshToken == '') {
-                return true;
+            if(googleCalendars[i].active) {
+                if(!googleCalendars[i].accessToken || googleCalendars[i].accessToken == '') {
+                    return true;
+                }
             }
         }
     }
@@ -402,7 +421,7 @@ function getGoogleAuthentication(settings) {
 
 function getGoogleCalendarId(index, auth, callback) {
 
-    let id = [];
+    const id = {};
 
     const cal = google.calendar({
         version: 'v3',
@@ -418,14 +437,31 @@ function getGoogleCalendarId(index, auth, callback) {
 
         if(res) {
             const items = res.data.items;
+
             if(items) {
                 if(items.length === 0) {
                     adapter.log.warn('No calendar id found.');
                 } else {
-                    const calendarId = items[0].id || '';
 
-                    id.push(calendarId);
-                    id.push(new Buffer(calendarId).toString('base64').replace('=', '').replace('+', '').replace('/', ''));
+                    const calendars = [];
+
+                    for(let i = 0; i < items.length; i++) {
+                        
+                        const calendar = {};
+
+                        if(items[i].primary) {
+                            id.account = items[i].id;
+                        }
+
+                        calendar.email = items[i].id;
+                        calendar.id = new Buffer((items[i].id || '')).toString('base64').replace('=', '').replace('+', '').replace('/', '');
+                        calendar.summary = items[i].summaryOverride || items[i].summary;
+                        calendar.color = items[i].backgroundColor || '#000000';
+
+                        calendars.push(calendar);
+                    }
+
+                    id.calendars = calendars;
 
                     callback(id);
                 }
@@ -494,33 +530,46 @@ function initServer(settings) {
                                                 return;
                                             }
                                         
-                                            adapter.log.info(`Received rights for google calendar ${req.query.state} (${settings.google[req.query.state].name})`);
+                                            adapter.log.info(`Received rights for google calendar "${req.query.state}" (${settings.google[req.query.state].name})`);
                                             
                                             //settings.google[req.query.state].oauth2 = oauth2;
                                             oauth2.setCredentials(tokens);
-                                            
+
                                             getGoogleCalendarId(req.query.state, oauth2, (id) => {
 
-                                                let configGoogle = adapter.config.google;
-                                                
-                                                configGoogle[req.query.state].id = id[1];
-                                                configGoogle[req.query.state].email = id[0];
+                                                const configGoogle = adapter.config.google;
+
+                                                adapter.log.info(`Set calendar name "${req.query.state}": Old name => "${configGoogle[req.query.state].name}" New name "${id.calendars[0].summary}"`);
+
+                                                configGoogle[req.query.state].active = true;
+                                                configGoogle[req.query.state].account = id.account;
+                                                configGoogle[req.query.state].name = id.calendars[0].summary;
+                                                configGoogle[req.query.state].id = id.calendars[0].id;
+                                                configGoogle[req.query.state].email = id.calendars[0].email;
                                                 configGoogle[req.query.state].accessToken = tokens.access_token;
                                                 configGoogle[req.query.state].refreshToken = tokens.refresh_token;
+                                                configGoogle[req.query.state].color = id.calendars[0].color;
 
-                                                adapter.setObjectNotExistsAsync(id[1] + '.email', {
-                                                    type: 'state',
-                                                    common: {
-                                                        name: 'E-Mail',
-                                                        type: 'string',
-                                                        role: 'email',
-                                                        read: false,
-                                                        write: false
-                                                    },
-                                                    native: {},
-                                                });
-                            
-                                                adapter.setStateAsync(id[1] + '.email', { val: id[0], ack: true });
+                                                for(let i = 1; i < id.calendars.length; i++) {
+
+                                                    const calendar = id.calendars[i];
+                                                    const configCalendar = {};
+                                                    
+                                                    adapter.log.info(`Found calendar in account "${id.account}": Calendar "${calendar.summary}"`);
+                                                    adapter.log.info(`The calendar "${calendar.summary}" was added. You can activate the calendar in the config.`);
+
+                                                    configCalendar.active = false;
+                                                    configCalendar.account = id.account;
+                                                    configCalendar.name = `${id.calendars[0].summary} ${calendar.summary}`;
+                                                    configCalendar.id = calendar.id;
+                                                    configCalendar.email = calendar.email;
+                                                    configCalendar.accessToken = tokens.access_token;
+                                                    configCalendar.refreshToken = tokens.refresh_token;
+                                                    configCalendar.days = configGoogle[req.query.state].days;
+                                                    configCalendar.color = calendar.color;
+
+                                                    configGoogle.push(configCalendar);
+                                                }
 
                                                 updateConfig({
                                                     google: configGoogle

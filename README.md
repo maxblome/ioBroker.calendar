@@ -55,7 +55,15 @@ Go to the adapter config an add the client ID and the client secret.
 
 ## Changelog
 
-### 0.1.0
+### 0.2.0 (2020-01-08)
+* (WLAN-Kabel) Multiple calendar support for one account
+* (WLAN-Kabel) Calendar color is now supported
+* (WLAN-Kabel) Calender states color, name, account added
+* (WLAN-Kabel) Calendar name is set as the state name
+* (WLAN-Kabel) Fixed an issue where the credentials were not properly controlled
+* (WLAN-Kabel) The google calendar name and color will be adopted
+
+### 0.1.0 (2020-01-07)
 * (WLAN-Kabel) Added calendar widget
 * (WLAN-Kabel) Cron job and server will stopped on unload
 * (WLAN-Kabel) Fixed an issue where not all states were deleted
