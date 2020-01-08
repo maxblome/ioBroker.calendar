@@ -93,6 +93,7 @@
             {
                 "active": false,
                 "name": "",
+                "account": "",
                 "accessToken": "",
                 "refreshToken": "",
                 "id": "",
