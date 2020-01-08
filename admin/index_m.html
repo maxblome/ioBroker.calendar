@@ -42,14 +42,18 @@
             });
 
             var table = document.getElementById("google-values");
-
-            google = settings.google || [];          
-
+            
             for (var c = 0; c < settings.google.length; c++) {
+                settings.google[c].active = settings.google[c].active || false;
                 settings.google[c].name = settings.google[c].name || '';
+                settings.google[c].accessToken = settings.google[c].accessToken || '';
+                settings.google[c].refreshToken = settings.google[c].refreshToken || '';
                 settings.google[c].id = settings.google[c].id || '';
-                settings.google[c].color = settings.google[c].color || '';
+                settings.google[c].email = settings.google[c].email || '';
+                settings.google[c].color = settings.google[c].color || '#000000';
             }
+
+            google = settings.google || [];
 
             onChange(false);
 
@@ -78,10 +82,10 @@
         }
     </script>
     <style>
-        td:nth-of-type(2), /* ID */
-        td:nth-of-type(3), /* E-Mail */
-        td:nth-of-type(4), /* Access Token */
-        td:nth-of-type(5) { /* Refresh Token */
+        td:nth-of-type(3), /* ID */
+        td:nth-of-type(4), /* E-Mail */
+        td:nth-of-type(5), /* Access Token */
+        td:nth-of-type(6) { /* Refresh Token */
             display: none;
         }
     </style>
@@ -94,7 +98,7 @@
                 <ul class="tabs">
                     <li class="tab col s2"><a href="#tab-main" class="translate active">Main</a></li>
                     <li class="tab col s2"><a href="#tab-google" class="translate">Google</a></li>
-                    <li class="tab col s2"><a href="#tab-microsoft" class="translate">Microsoft</a></li>
+                    <!--<li class="tab col s2"><a href="#tab-microsoft" class="translate">Microsoft</a></li>-->
                 </ul>
             </div>
 
@@ -106,6 +110,10 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col s12 m6">
+                        <input class="value" id="fqdn" type="text" placeholder="localhost or calendar.de"/>
+                        <label class="translate" for="fqdn">FQDN:</label>
+                    </div>
                     <div class="col s12 m6">
                         <input class="value" id="port" type="number" min="1" max="65565"/>
                         <label class="translate" for="port">Port:</label>
@@ -127,12 +135,8 @@
                         <label class="translate" for="googleClientID">Client ID:</label>
                     </div>
                     <div class="col s12 m6">
-                            <input class="value" id="googleClientSecret" type="text"/>
-                            <label class="translate" for="googleClientSecret">Client Secret:</label>
-                        </div>
-                    <div class="col s12 m6">
-                        <input class="value" id="fqdn" type="text" placeholder="localhost or calendar.de"/>
-                        <label class="translate" for="fqdn">FQDN:</label>
+                        <input class="value" id="googleClientSecret" type="text"/>
+                        <label class="translate" for="googleClientSecret">Client Secret:</label>
                     </div>
                 </div>
                 <div class="col s12 m12" id="google">
@@ -141,6 +145,7 @@
                         <table id="google-values" class="table-values">
                             <thead>
                                 <tr>
+                                    <th data-name="active" class="translate" data-type="checkbox">active</th>
                                     <th data-name="name" class="translate">name</th>
                                     <th data-name="id" style="display: none">id</th>
                                     <th data-name="email" style="display: none">email</th>
@@ -148,6 +153,7 @@
                                     <th data-name="refreshToken" style="display: none">refreshToken</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <!--<th data-name="color" data-type="color" class="translate">color</th> comming soon-->
+                                    <th data-name="color" data-type="color" class="translate">color</th>
                                     <th data-buttons="delete up down"></th>
                                 </tr>
                             </thead>
@@ -155,11 +161,11 @@
                     </div>
                 </div>
             </div>
-            <div id="tab-microsoft" class="col s12 page">
+            <!--<div id="tab-microsoft" class="col s12 page">
                 <div class="col s12 m12" id="google">
                     <p class="translate">Comming soon</p>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </body>
