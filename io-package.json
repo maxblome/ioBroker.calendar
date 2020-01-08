@@ -91,10 +91,13 @@
         "fqdn": "localhost",
         "google": [
             {
-              "name": "Calendar",
-              "accessToken": "",
-              "refreshToken": "",
-              "id": ""
+                "active": false,
+                "name": "",
+                "accessToken": "",
+                "refreshToken": "",
+                "id": "",
+                "email": "",
+                "color": "#000000"
             }
         ]
     },
