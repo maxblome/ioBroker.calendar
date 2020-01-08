@@ -42,10 +42,11 @@
             });
 
             var table = document.getElementById("google-values");
-            
+
             for (var c = 0; c < settings.google.length; c++) {
                 settings.google[c].active = settings.google[c].active || false;
                 settings.google[c].name = settings.google[c].name || '';
+                settings.google[c].account = settings.google[c].account || '';
                 settings.google[c].accessToken = settings.google[c].accessToken || '';
                 settings.google[c].refreshToken = settings.google[c].refreshToken || '';
                 settings.google[c].id = settings.google[c].id || '';
@@ -84,8 +85,9 @@
     <style>
         td:nth-of-type(3), /* ID */
         td:nth-of-type(4), /* E-Mail */
-        td:nth-of-type(5), /* Access Token */
-        td:nth-of-type(6) { /* Refresh Token */
+        td:nth-of-type(5), /* Account */
+        td:nth-of-type(6), /* Access Token */
+        td:nth-of-type(7) { /* Refresh Token */
             display: none;
         }
     </style>
@@ -149,6 +151,7 @@
                                     <th data-name="name" class="translate">name</th>
                                     <th data-name="id" style="display: none">id</th>
                                     <th data-name="email" style="display: none">email</th>
+                                    <th data-name="account" style="display: none">account</th>
                                     <th data-name="accessToken" style="display: none">accessToken</th>
                                     <th data-name="refreshToken" style="display: none">refreshToken</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
