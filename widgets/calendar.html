@@ -101,9 +101,10 @@
 -->
 <script>
 
-var events = new Array();
+var events = new Map();
 var date_memory;
 var color;
+var isLoaded = false;
 
 // get current list
 function renderPage(wid) {
@@ -115,7 +116,15 @@ function renderPage(wid) {
             
             if(state.endsWith("events")) {
 
-                var day = state.replace("events", "");
+                var eventsObj = JSON.parse(states[state].val);
+                var dayObj = {};
+                var date = states[state.replace('.events', '') + '.date'].val;
+
+                dayObj.events = eventsObj;
+
+                events.set(date, dayObj); //parseInt(state.split('.')[3])
+
+                /*var day = state.replace("events", "");
                 var eventCount = states[state].val;
 
                 var newDate = {};
@@ -135,12 +144,16 @@ function renderPage(wid) {
                 }
 
                 newDate.events = newArray;
-                events.push(newDate);
+                events.push(newDate);*/
             } else if(state.endsWith("color")) {
 
                 color = states[state].val;
             }
+
+            
         }
+
+        isLoaded = true;
     });
 }
 
@@ -152,20 +165,19 @@ function colorizeEvents(color) {
     }
 }
 
-    function iniCalendar() {
-        //heutiges Datum setzen
-        var d = new Date();
-        //aktuelles Datum speichern
-        setDateToMemory(d);
-        //Calender laden
-        loadcalendar();
-    }
+function iniCalendar() {
+    
+    var d = new Date();
+    
+    setDateToMemory(d);
+    
+    loadCalendar();
+}
 
     /**
     * Läd die Tabelle mit dem übergebenen Datum (Monat)
     */
-    function loadcalendar()
-    {
+async function loadCalendar() {
     //aktuelles Datum holen (1. des Monats)
     var d = getDateFromMemory();
     //Monat ermitteln aus this_date (zählen beginnt bei 0, daher +1)
@@ -174,7 +186,7 @@ function colorizeEvents(color) {
     var y = d.getFullYear();
     //Monat und Jahr eintragen
     //document.all.calendar_month.innerHTML = getMonthname(m+1) + " " + y;
-    document.getElementById("calendar_month").innerHTML = getMonthname(m+1) + " " + y;
+    document.getElementById("calendar-month").innerHTML = getMonthname(m + 1) + " " + y;
     
     //ersten Tag des Monats festlegen
     var firstD = d;
@@ -195,70 +207,81 @@ function colorizeEvents(color) {
     var bEvent = false;
 
     //Alle Kalender Spalten durchzählen
-    for (var i = 1; i <= 42; i++)
-    {
-    bEvent = false;
+    for (var i = 1; i <= 42; i++) {
+        bEvent = false;
 
-    //holen der aktuellen Zelle
-    entry = document.getElementById("calendar-entry-" + i);
-    //errechnen der Tages Zahl
-    zahl = (i + 1) - dateDay;
-    //datum zusammenschreiben
-    var dx = new Date(y, m, zahl);
+        //holen der aktuellen Zelle
+        entry = document.getElementById("calendar-entry-" + i);
+        //errechnen der Tages Zahl
+        zahl = (i + 1) - dateDay;
+        //datum zusammenschreiben
+        var dx = new Date(y, m, zahl);
+        
+        //Eintragen der Daten ab ersten Tag im Monat und wenn es ein gültiges Datum ist
+        if (i >= dateDay && isValidDate(y, m, zahl))
+        {
+        //entry.innerHTML = "<a class=calendar_link href=javascript:putDate(" + zahl +")>" + zahl + "</a>";
+        entry.innerHTML = "<div>" + zahl + "</div>";
 
-    //Eintragen der Daten ab ersten Tag im Monat und wenn es ein gültiges Datum ist
-    if (i >= dateDay && isValidDate(y, m, zahl))
-    {
-    //entry.innerHTML = "<a class=calendar_link href=javascript:putDate(" + zahl +")>" + zahl + "</a>";
-    entry.innerHTML = "<div>" + zahl + "</div>";
+        if(entry.classList.contains("calendar-entry-invisible")) entry.classList.remove("calendar-entry-invisible");
+        
+        //Listener hinzufügen
+        entry.onclick = function(event) {openDateDetails(event.currentTarget.children[0].innerHTML)};
+        
+         //heutiges Datum hervorheben
+        if (hD.getDate() == dx.getDate() &&
+            hD.getMonth() == dx.getMonth() &&
+            hD.getYear() == dx.getYear()) {
+            if(!entry.classList.contains("calendar-entry-today")) entry.classList.add("calendar-entry-today");
+        } else {
+            if(entry.classList.contains("calendar-entry-today")) entry.classList.remove("calendar-entry-today");
+        }
 
-    if(entry.classList.contains("calendar-entry-invisible")) entry.classList.remove("calendar-entry-invisible");
-    
-    //Listener hinzufügen
-    entry.onclick = function(event) {openDateDetails(event.currentTarget.children[0].innerHTML)};
-    
-    //Events hinzufügen
-    entry.appendChild(getEvents(y, m, zahl));
+        //Events hinzufügen
+        
+        do {
+            if(isLoaded) {
+                entry.appendChild(getEvents(y, m, zahl));
+            } else {
+                await sleep(100);
+            }
+        
+        } while(isLoaded == false);
 
-    colorizeEvents(color);
+        colorizeEvents(color);
 
-    //Wenn Tag ein Feiertag ist
-    /*if (isHoliday(m, zahl)) {
-        entry.style.color="#FF0000";
-    } else {
-        if (!bEvent) entry.style.color="#000000";
-    }*/
-    
-    //heutiges Datum hervorheben
-    if (hD.getDate() == dx.getDate() &&
-    hD.getMonth() == dx.getMonth() &&
-    hD.getYear() == dx.getYear()) {
-        if(!entry.classList.contains("calendar-entry-today")) entry.classList.add("calendar-entry-today");
-    } else {
-        if(entry.classList.contains("calendar-entry-today")) entry.classList.remove("calendar-entry-today");
+        //Wenn Tag ein Feiertag ist
+        /*if (isHoliday(m, zahl)) {
+            entry.style.color="#FF0000";
+        } else {
+            if (!bEvent) entry.style.color="#000000";
+        }*/
+
+        }
+        else
+        {
+        entry.innerHTML = "";
+
+        if (i>= dateDay)
+        {//Wenn Kalenderende
+        //Zelle = hidden
+        //entry.hidden = true;
+        //entry.style.border = "0px"; 
+        if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
+        }
+        else
+        {//Wenn Kalenderanfang
+        //Border-width = 0px
+        //entry.style.border = "0px";
+        if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
+        }
+        }
+    }
     }
 
-    }
-    else
-    {
-    entry.innerHTML = "";
-
-    if (i>= dateDay)
-    {//Wenn Kalenderende
-    //Zelle = hidden
-    //entry.hidden = true;
-    //entry.style.border = "0px"; 
-    if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
-    }
-    else
-    {//Wenn Kalenderanfang
-    //Border-width = 0px
-    //entry.style.border = "0px";
-    if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
-    }
-    }
-    }
-    }
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
     /**
     * schaltet einen Monat Weiter
@@ -276,7 +299,7 @@ function colorizeEvents(color) {
 
         d = new Date(y, m, 01);
         setDateToMemory(d);
-        loadcalendar();
+        loadCalendar();
     }
     /**
     * schaltet einen Monat zurück
@@ -297,7 +320,7 @@ function colorizeEvents(color) {
     }
     d = new Date(y,m,01);
     setDateToMemory(d);
-    loadcalendar();
+    loadCalendar();
     }
 
     /**
@@ -453,9 +476,49 @@ function getEvents(y, m, d) {
     //Monate fangen bei 0 an zuzählen
     m++;
 
-    for(var i = 0; i < events.length; i++) {
-        
-        var date = events[i].date.split("T")[0].split("-");
+    m = (m < 10) ? "0" + m : m;
+    d = (d < 10) ? "0" + d : d;
+    
+    var dayObj = events.get(y + "-" + m + "-" + d);
+
+    //for(var i = 0; i < events.size; i++) {
+
+        //var dayObj = events.get(i);
+        //var date = dayObj.date.split('-');
+        //var eventObj = dayObj.events;
+
+        //var year = parseInt(date[0]);
+        //var month = parseInt(date[1]);
+        //var day = parseInt(date[2]);
+
+        //console.log((year == y && month == m && day == d) + eventObj);
+
+        //if(year == y && month == m && day == d) {
+        if(dayObj) {
+            var eventObj = dayObj.events;
+
+            if(eventObj.length > 0) {
+
+                var nodeEvents = document.createElement("div");
+                nodeEvents.classList.add("calendar-event-container");
+
+                for(var j = 0; j < eventObj.length; j++) {
+
+                    var element = document.createElement("div");
+                    element.classList.add("calendar-event");
+                    
+                    var text = document.createTextNode(eventObj[j].summary);
+
+                    element.appendChild(text);
+
+                    nodeEvents.appendChild(element);
+                }
+
+                return nodeEvents;
+            }            
+        }
+
+        /*var date = events[i].date.split("-");
 
         var year = parseInt(date[0]);
         var month = parseInt(date[1]);
@@ -482,8 +545,8 @@ function getEvents(y, m, d) {
 
                 return nodeEvents;
             }
-        }
-    }
+        }*/
+    //}
 
     return document.createTextNode("");
 }
@@ -507,7 +570,7 @@ function getEvents(y, m, d) {
                 </tr>-->
                 <tr class="calendar-row-small calendar-border-color">
                     <td class="calendar-head" onclick="prevMonth()"><div>&laquo;</div></td>
-                    <td colspan=5 class="calendar-head-month" id="calendar_month">-</td>
+                    <td colspan=5 class="calendar-head-month" id="calendar-month">-</td>
                     <td class="calendar-head" onclick="nextMonth()"><div>&raquo;</div></td>
                 </tr>
                 <tr class="calendar-row-small calendar-border-color" style="color: <%= this.data.attr('dayColor') %>;">
