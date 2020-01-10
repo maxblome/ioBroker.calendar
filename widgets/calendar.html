@@ -110,7 +110,10 @@
             "dayColor":        {"en": "weekday color",  "de": "Wochentagsfarbe","ru": "цвет дня недели"},
             "dateColor":       {"en": "date color",     "de": "Datumsfarbe",    "ru": "цвет даты"},
             "dateBackgroundColor":       {"en": "date background color",     "de": "Datumshintergrundfarbe",    "ru": "цвет фона даты"},
-            "group_calendar":       {"en": "calendar",     "de": "Kalender",    "ru": "календарь"}
+            "group_calendar":       {"en": "additional calendars",     "de": "zusätzliche Kalender",    "ru": "дополнительные календари"},
+            "eventTextColor":       {"en": "event text color",     "de": "Ereignistextfarbe",    "ru": "цвет текста события"},
+            "popupColor":       {"en": "popup color",     "de": "Popup-Farbe",    "ru": "всплывающий цвет"},
+            "popupCloseColor":       {"en": "close button color",     "de": "Farbe der Schaltfläche \"Schließen\"",    "ru": "цвет кнопки закрытия"}
         });
     }
 
@@ -132,7 +135,7 @@
 
             let ids = [];
 
-            ids.push({id: oid, loaded: false});
+            ids.push({id: oid, color: data.attr('eventTextColor'), loaded: false});
 
             for(let i = 0; i <= data.count; i++) {
                 if(data.attr('oid' + i)) {
@@ -145,7 +148,7 @@
                         }
                     }
                     
-                    if(!isInList) ids.push({id: data.attr('oid' + i), loaded: false});
+                    if(!isInList) ids.push({id: data.attr('oid' + i), color: data.attr('eventTextColor' + i), loaded: false});
                 }
             }
 
@@ -182,7 +185,7 @@
 
                             } else if(state.endsWith('color')) {
 
-                                color.set(ids[i].id, states[state].val);
+                                color.set(ids[i].id, {backgroundColor: states[state].val, color: ids[i].color});
                             }
                         }
 
@@ -209,7 +212,12 @@
             const calendarEvents = document.getElementsByClassName(wid + '-calendar-event');
             
             for (let k = 0; k < calendarEvents.length; k++) {
-                calendarEvents[k].style.backgroundColor = color.get(calendarEvents[k].getAttribute('calid'));
+
+                let colors = color.get(calendarEvents[k].getAttribute('calid'));
+
+                calendarEvents[k].style.backgroundColor = colors.backgroundColor;
+                calendarEvents[k].style.color = colors.color;
+
             }
         }
 
@@ -404,7 +412,7 @@
             const template = 
             '<tr>' +
                 '<td>' +
-                    '<div class="calendar-event-detail" style="background-color: ##background-color##">' +
+                    '<div class="calendar-event-detail" style="background-color: ##background-color##; color: ##color##">' +
                         '<table class="calendar-event-table-big">' +
                             '<tr>' +
                             '    <td rowspan="2" style="text-align: center">##time##</td>' +
@@ -463,17 +471,18 @@
                         const endTimeText = ((endTime.getHours() < 10) ? '0' + endTime.getHours() : endTime.getHours()) + ':' + 
                             ((endTime.getMinutes() < 10) ? '0' + endTime.getMinutes() : endTime.getMinutes());
 
+                        const colors = color.get(eventObj[j].id);
+
                         newEntry = newEntry.replace('##summary##', eventObj[j].summary);
                         newEntry = newEntry.replace('##time##', startTimeText + ' - ' + endTimeText);
                         newEntry = newEntry.replace('##description##', (eventObj[j].description || ''));
-                        newEntry = newEntry.replace('##background-color##', color.get(eventObj[j].id));
+                        newEntry = newEntry.replace('##background-color##', colors.backgroundColor);
+                        newEntry = newEntry.replace('##color##', colors.color);
 
                         newTableContent = newTableContent + newEntry;
                     }
                 }            
             }
-        
-            console.log("Inhalt: " + newTableContent);
 
             return newTableContent;
         }
@@ -541,9 +550,9 @@
         type="text/ejs"
         class="vis-tpl"
         data-vis-prev='<img src="widgets/calendar/img/calendar.png" width="90%"></img>'
-        data-vis-attrs="oid/id;count[1]/slider,1,5,1;"
-        data-vis-attrs0="group.color;monthYearColor/color;buttonColor/color;dayColor/color;dateColor/color;dateBackgroundColor/color;"
-        data-vis-attrs1="group.calendar/byindex;oid(1-count)/id;"
+        data-vis-attrs="oid/id;eventTextColor/color;count[0]/slider,0,5,0;"
+        data-vis-attrs0="group.color;monthYearColor/color;buttonColor/color;dayColor/color;dateColor/color;dateBackgroundColor/color;popupColor/color;popupCloseColor/color;"
+        data-vis-attrs1="group.calendar/byindex;oid(1-count)/id;eventTextColor(1-count)/color;"
         data-vis-set="calendar"
         data-vis-type="calendar"
         data-vis-name="Calendar">
@@ -626,12 +635,12 @@
                 </tr>
             </tbody>
         </table>
-        <div id="<%= this.data.attr('wid') %>-calendar-entry-detail-container" class="calendar-entry-detail calendar-entry-detail-hidden">
+        <div id="<%= this.data.attr('wid') %>-calendar-entry-detail-container" class="calendar-entry-detail calendar-entry-detail-hidden" style="color: <%= this.data.attr('popupColor') %>;">
             <div class="calendar-entry-detail-content">
                 <h3 style="margin: 0;"></h3>
                 <table id="<%= this.data.attr('wid') %>-calendar-entry-detail-table" class="calendar-event-table">
                 </table>
-                <span class="calendar-entry-detail-close" onclick="closeDateDetails('<%= this.data.attr('wid') %>')">CLOSE</span>
+                <span class="calendar-entry-detail-close" onclick="closeDateDetails('<%= this.data.attr('wid') %>')" style="color: <%= this.data.attr('popupCloseColor') %>;">CLOSE</span>
             </div>
         </div>
     </div>
