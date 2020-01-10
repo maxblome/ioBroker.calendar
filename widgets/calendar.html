@@ -153,6 +153,10 @@
 
             for(let i = 0; i < ids.length; i++) {
 
+                let isInMap = false;
+
+                //for(let k = 0; k < events.size)
+
                 ids[i].loaded = await new Promise((resolve, reject) => {
                     vis.conn.getStates(ids[i].id + '*', function (err, states) {
 
@@ -205,7 +209,6 @@
             const calendarEvents = document.getElementsByClassName(wid + '-calendar-event');
             
             for (let k = 0; k < calendarEvents.length; k++) {
-                console.log(wid + " " + color.get(calendarEvents[k].getAttribute('calid')) + " " + calendarEvents[k].getAttribute('calid'));
                 calendarEvents[k].style.backgroundColor = color.get(calendarEvents[k].getAttribute('calid'));
             }
         }
@@ -388,8 +391,91 @@
         
             calendarEntryDetailContainer.children[0].children[0].innerHTML = ((d.getDate() < 10) ? '0' + d.getDate() : d.getDate()) + '.' + 
             ((d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) + '.' + d.getFullYear();
+
+            let table = document.getElementById(wid + '-calendar-entry-detail-table');
+
+            table.innerHTML = createTableContent(wid, d.getFullYear(), d.getMonth(), d.getDate());
             
             if(calendarEntryDetailContainer.classList.contains('calendar-entry-detail-hidden')) calendarEntryDetailContainer.classList.remove('calendar-entry-detail-hidden');
+        }
+
+        function createTableContent(wid, y, m ,d) {
+
+            const template = 
+            '<tr>' +
+                '<td>' +
+                    '<div class="calendar-event-detail" style="background-color: ##background-color##">' +
+                        '<table class="calendar-event-table-big">' +
+                            '<tr>' +
+                            '    <td rowspan="2" style="text-align: center">##time##</td>' +
+                            '    <td colspan="5">##summary##</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                            '    <td colspan="5" style="font-weight: normal">##description##</td>' +
+                            '</tr>' +
+                        '</table>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+
+            y = parseInt(y);
+            m = parseInt(m);
+            d = parseInt(d);
+        
+            //Monate fangen bei 0 an zuzählen
+            m++;
+        
+            m = (m < 10) ? '0' + m : m;
+            d = (d < 10) ? '0' + d : d;
+            
+            const map = events.get(wid);
+
+            const dayObj = map.get(y + '-' + m + '-' + d);
+            
+            let newTableContent = '';
+
+            if(dayObj) {
+                const eventObj = dayObj.events;
+    
+                if(eventObj.length > 0) {
+
+                    for(let j = 0; j < eventObj.length; j++) {
+    
+                        let newEntry = template;
+
+                        const startTime = new Date(eventObj[j].startTime);
+                        const endTime = new Date(eventObj[j].endTime);
+
+                        if(!eventObj[j].startTime.includes('T')) {
+                            startTime.setHours(0);
+                            startTime.setHours(0);
+                            startTime.setHours(0);
+                        }
+
+                        if(!eventObj[j].endTime.includes('T')) {
+                            endTime.setHours(0);
+                            endTime.setHours(0);
+                            endTime.setHours(0);
+                        }
+
+                        const startTimeText = ((startTime.getHours() < 10) ? '0' + startTime.getHours() : startTime.getHours()) + ':' + 
+                            ((startTime.getMinutes() < 10) ? '0' + startTime.getMinutes() : startTime.getMinutes());
+                        const endTimeText = ((endTime.getHours() < 10) ? '0' + endTime.getHours() : endTime.getHours()) + ':' + 
+                            ((endTime.getMinutes() < 10) ? '0' + endTime.getMinutes() : endTime.getMinutes());
+
+                        newEntry = newEntry.replace('##summary##', eventObj[j].summary);
+                        newEntry = newEntry.replace('##time##', startTimeText + ' - ' + endTimeText);
+                        newEntry = newEntry.replace('##description##', (eventObj[j].description || ''));
+                        newEntry = newEntry.replace('##background-color##', color.get(eventObj[j].id));
+
+                        newTableContent = newTableContent + newEntry;
+                    }
+                }            
+            }
+        
+            console.log("Inhalt: " + newTableContent);
+
+            return newTableContent;
         }
 
         function closeDateDetails(wid) {
@@ -543,6 +629,8 @@
         <div id="<%= this.data.attr('wid') %>-calendar-entry-detail-container" class="calendar-entry-detail calendar-entry-detail-hidden">
             <div class="calendar-entry-detail-content">
                 <h3 style="margin: 0;"></h3>
+                <table id="<%= this.data.attr('wid') %>-calendar-entry-detail-table" class="calendar-event-table">
+                </table>
                 <span class="calendar-entry-detail-close" onclick="closeDateDetails('<%= this.data.attr('wid') %>')">CLOSE</span>
             </div>
         </div>
