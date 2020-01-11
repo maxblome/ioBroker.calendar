@@ -13,6 +13,9 @@ const express = require('express');
 const http = require('http');
 const cron = require('node-cron');
 const {google} = require('googleapis');
+const ical = require('./lib/ical');
+const nextcloud = require('./lib/nextcloud');
+const util = require('./lib/utils');
 
 let cronJob;
 let server;
@@ -59,25 +62,63 @@ class Calendar extends utils.Adapter {
         if(hasCalendarWithoutGrantPermission(adapter.config)) {
             server = initServer(adapter.config);
         }
+        
+        for(let i = 0; i < adapter.config.caldav.length; i++) {
 
-        for(let i = 0; i < adapter.config.google.length; i++) {
+            const calendar = adapter.config.caldav[i];
 
-            const calendar = adapter.config.google[i];
+            if(calendar.active && !calendar.listIsLoaded) {
 
-            if(adapter.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '') {
+                let ids;
+
+                try {
+                    ids = await getCaldavCalendarIds(calendar);
+                } catch(err) {
+                    adapter.log.error(err);
+                }
+                
+                if(ids) {
+                    updateConfig({
+                        caldav: handleCaldavCalendarIds(adapter.config, i, ids)
+                    });
+                }
+            }
+        }
+
+        const calendars = [
+            ...adapter.config.google,
+            ...adapter.config.caldav
+        ];
+
+        for(let i = 0; i < calendars.length; i++) {
+
+            //const calendar = adapter.config.google[i];
+
+            const calendar = calendars[i];
+            
+            if(adapter.config.caldavActive && calendar.active && calendar.username != '' && calendar.hostname != '' && calendar.password != '' && calendar.id != '') {
+                addDevice(calendar.id, calendar.name);
+                addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
+                addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
+                addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
+            } else if(adapter.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '') {
                 addDevice(calendar.id, calendar.name);
                 addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.account);
                 addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
                 addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
             } else {
-                removeDevice(calendar.id);
+                if(calendar.id != '') removeDevice(calendar.id);
             }
         }
 
         if(this.config.googleActive) {
             if(oauth2) {
                 startCalendarSchedule(adapter.config, oauth2);
+            } else if(this.config.caldavActive) {
+                startCalendarSchedule(adapter.config);
             }
+        } else if(this.config.caldavActive) {
+            startCalendarSchedule(adapter.config);
         }
 
         // in this template all states changes inside the adapters namespace are subscribed
@@ -172,22 +213,34 @@ async function updateConfig(newConfig) {
     await adapter.setForeignObjectAsync(`system.adapter.${adapter.namespace}`, adapterObj);
 }
 
-async function startCalendarSchedule(config, auth) {
+async function startCalendarSchedule(config, auth = null) {
 
     const googleCalendars = config.google;
+    const caldavCalendars = config.caldav;
     
     for(let i = 0; i < googleCalendars.length; i++) {
         if(googleCalendars[i].active) {
 
             try {
                 const events = await getGoogleCalendarEvents(googleCalendars[i], auth, i);
-
+                
                 handleCalendarEvents(googleCalendars[i], events);
             } catch(err) {
                 adapter.log.error(err);
             }
+        }
+    }
 
-            //getGoogleCalendarEvents(googleCalendars[i], auth, i);
+    for(let i = 0; i < caldavCalendars.length; i++) {
+        if(caldavCalendars[i].active) {
+
+            try {
+                const events = await getCaldavCalendarEvents(caldavCalendars[i]);
+                
+                handleCalendarEvents(caldavCalendars[i], events);
+            } catch(err) {
+                adapter.log.error(err);
+            }
         }
     }
 
@@ -202,11 +255,94 @@ async function startCalendarSchedule(config, auth) {
                 } catch(err) {
                     adapter.log.error(err);
                 }
+            }
+        }
 
-                //getGoogleCalendarEvents(googleCalendars[i], auth, i);
+        for(let i = 0; i < caldavCalendars.length; i++) {
+            if(caldavCalendars[i].active) {
+    
+                try {
+                    const events = await getCaldavCalendarEvents(caldavCalendars[i]);
+    
+                    handleCalendarEvents(caldavCalendars[i], events);
+                } catch(err) {
+                    adapter.log.error(err);
+                }
             }
         }
     });
+
+    adapter.log.debug('Cron job started');
+}
+
+async function getCaldavCalendarIds(calendar) {
+
+    let calendarIds;
+
+    try {
+        calendarIds = await nextcloud.queryCalendarList(calendar.hostname, calendar.username, calendar.password);
+    } catch(err) {
+        adapter.log.error(err);
+    }
+
+    return calendarIds;
+}
+
+function handleCaldavCalendarIds(config, index, ids) {
+
+    let firstIsSet = false;
+
+    const configCaldav = config.caldav;
+    
+    for(let i = 0; i < ids.length; i++) {
+        
+        if(ids[i].propstat[0].status[0].includes('200')) {
+
+            if(!firstIsSet) {
+                
+                let id = new Buffer((ids[i].href[0] || '')).toString('base64').replace(/[+/= ]/g, '');
+                id = id.substring(id.length - 31, id.length - 1);
+                
+                adapter.log.info(`Set calendar name "${index}": Old name => "${configCaldav[index].name}" New name "${ids[i].propstat[0].prop[0].displayname[0]}"`);
+                
+                configCaldav[index].active = true;
+                configCaldav[index].path = ids[i].href[0];
+                configCaldav[index].name = ids[i].propstat[0].prop[0].displayname[0];
+                configCaldav[index].id =  id;
+                configCaldav[index].ctag = ids[i].propstat[0].prop[0].getctag[0] || '';
+                configCaldav[index].color = ids[i].propstat[0].prop[0]['calendar-color'][0]._ || '#000000';
+                configCaldav[index].listIsLoaded = true;
+
+                firstIsSet = true;
+            } else {
+
+                const calendar = ids[i];
+                const configCalendar = {};
+                
+                adapter.log.info(`Found calendar in account "${configCaldav[index].username}": Calendar "${calendar.propstat[0].prop[0].displayname[0]}"`);
+                adapter.log.info(`The calendar "${calendar.propstat[0].prop[0].displayname[0]}" was added. You can activate the calendar in the config.`);
+                
+                let id = new Buffer((calendar.href[0] || '')).toString('base64').replace(/[+/= ]/g, '');
+                id = id.substring(id.length - 31, id.length - 1);
+
+                configCalendar.active = false;
+                configCalendar.name = calendar.propstat[0].prop[0].displayname[0];
+                configCalendar.id = id;
+                configCalendar.hostname = configCaldav[index].hostname;
+                configCalendar.username = configCaldav[index].username;
+                configCalendar.password = configCaldav[index].password;
+                configCalendar.ctag = calendar.propstat[0].prop[0].getctag[0] || '';
+                configCalendar.days = configCaldav[index].days;
+                configCalendar.color = calendar.propstat[0].prop[0]['calendar-color'][0]._ || '#000000';
+                configCalendar.path = calendar.href[0];
+                configCalendar.listIsLoaded = true;
+        
+                configCaldav.push(configCalendar);
+            }
+        }
+    }
+    
+    return configCaldav;
 }
 
 function sameDate(targetDate, calendarDate) {
@@ -334,6 +470,35 @@ function removeDeleted(oldList, newList, calendarId) {
     }
 }
 
+async function getCaldavCalendarEvents(calendar) {
+
+    if(adapter.config.caldavActive && calendar.active && calendar.username != '' &&
+        calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '') {
+
+        let events;
+        const list = [];
+
+        try {
+
+            events = await nextcloud.queryEvents(calendar.hostname, calendar.path, calendar.username, calendar.password);
+
+        } catch(err) {
+            adapter.log.error(err);
+        }
+
+        for(let i = 0; i < events.length; i++) {
+
+            const calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+            
+            list.push(util.normalizeEvent(calendar.events[0].summary, calendar.events[0].description, calendar.events[0].dtstart.val, calendar.events[0].dtend.val));
+        }
+
+        adapter.log.info(`Updated calendar "${calendar.name}"`);
+
+        return list;
+    }
+}
+
 async function getGoogleCalendarEvents(calendar, auth, index) {
 
     return new Promise((resolve, reject) => {
@@ -363,8 +528,15 @@ async function getGoogleCalendarEvents(calendar, auth, index) {
                     adapter.log.error(`The Google API returned an error. Affected calendar: ${calendar.name}`);
                     reject(err);
                 } else if(res) {
-    
-                    resolve(res.data.items);
+                    
+                    const list = [];
+
+                    for(let i = 0; i < res.data.items.length; i++) {
+                        list.push(util.normalizeEvent(res.data.items[i].summary, res.data.items[i].description,
+                            (res.data.items[i].start.date || res.data.items[i].start.dateTime), (res.data.items[i].end.date || res.data.items[i].end.dateTime)));
+                    }
+
+                    resolve(list);
     
                     adapter.log.info(`Updated calendar "${calendar.name}"`);
                 }
@@ -394,13 +566,13 @@ async function handleCalendarEvents(calendar, events) {
 
                 //addChannel(`${calendar.id}.${j}`, `Day ${j}`);
 
-                if(sameDate(getDatetime(j), (events[i].start.date) ? events[i].start.date : events[i].start.dateTime)) {
+                if(sameDate(getDatetime(j), events[i].startTime)) {
 
                     //const objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`;
 
                     //addChannel(objNamespace, `Event ${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`);
 
-                    const eventObj = {};
+                    //const eventObj = {};
                     const dayObj = dayEvents.get(j) || [];
 
                     //addState(`${objNamespace}.summary`, 'Summary', 'string', 'event.summary', events[i].summary);
@@ -408,12 +580,12 @@ async function handleCalendarEvents(calendar, events) {
                     //addState(`${objNamespace}.startTime`, 'Start Time', 'string', 'event.startTime', (events[i].start.date || events[i].start.dateTime));
                     //addState(`${objNamespace}.endTime`, 'End Time', 'string', 'event.endTime', (events[i].end.date.substring(0, 9) || events[i].end.dateTime.substring(0, 9)));
 
-                    eventObj.summary = events[i].summary;
+                    /*eventObj.summary = events[i].summary;
                     eventObj.description = events[i].description;
-                    eventObj.startTime = (events[i].start.date || events[i].start.dateTime);
-                    eventObj.endTime = (events[i].end.date || events[i].end.dateTime);
+                    eventObj.startTime = events[i].startTime;
+                    eventObj.endTime = events[i].endTime;*/
 
-                    dayObj.push(eventObj);
+                    dayObj.push(events[i]);
 
                     dayEvents.set(j, dayObj);
 
