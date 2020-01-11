@@ -14,12 +14,12 @@
 
 ## Calendar adapter for ioBroker
 
-Read your google calendar.
+Read your google or caldav calendar.
 
 ## Todo
 * Add Outlook calendar
 * Add function to add events to calendar
-* Extend  vis widget
+* Extend vis widget
 
 ## Google Authentication
 The following step is only needed if your ioBroker is installed on another computer/server and you cannot acces the webinterface via localhost.
@@ -27,7 +27,7 @@ The following step is only needed if your ioBroker is installed on another compu
 ### Windows:
 
 Run ```nodepad.exe``` with admin right and open the ```C:\Windows\System32\drivers\etc\hosts``` file.
-Add a entry like ```192.168.0.10    example.com //<IP-Adress ioBroker>     <FQDN>```
+Add a entry like ```192.168.0.10    example.com``` (<IP-Adress ioBroker>     <FQDN>)
 Save the file and open the webinterface via the <FQDN> you have written in the hosts file. Example: http://example.com:8081
 
 ### Linux:
@@ -53,7 +53,25 @@ Create the client id and copy the displayed client ID and the client secret.
 
 Go to the adapter config an add the client ID and the client secret.
 
+## Caldav Calendar (Tested with Nextcloud)
+
+You can add yout caldav calendar in the adapter config.
+
+Enter your access data and the host name in the config.
+
 ## Changelog
+
+### 1.0.1 (2020-01-11)
+* (WLAN-Kabel) Missing dependency added
+
+### 1.0.0 (2020-01-11)
+* (WLAN-Kabel) Added caldav support
+* (WLAN-Kabel) Multiple calendars can be displayed in one widget
+* (WLAN-Kabel) Added more widget settings
+* (WLAN-Kabel) State structure changed
+* (WLAN-Kabel) Appointments are now shown in the popup
+* (WLAN-Kabel) Some internal functions revised
+* (WLAN-Kabel) Fixed an error when saving the authentication data
 
 ### 0.2.0 (2020-01-08)
 * (WLAN-Kabel) Multiple calendar support for one account

@@ -1,8 +1,32 @@
 {
     "common": {
         "name": "calendar",
-        "version": "0.2.0",
+        "version": "1.0.1",
         "news": {
+            "1.0.1": {
+                "en": "Missing dependency added",
+                "de": "Fehlende Abhängigkeit hinzugefügt",
+                "ru": "Добавлена недостающая зависимость",
+                "pt": "Dependência ausente adicionada",
+                "nl": "Ontbrekende afhankelijkheid toegevoegd",
+                "fr": "Dépendance manquante ajoutée",
+                "it": "Aggiunta dipendenza mancante",
+                "es": "Falta dependencia agregada",
+                "pl": "Dodano brakującą zależność",
+                "zh-cn": "缺少依赖项添加"
+            },
+            "1.0.0": {
+                "en": "Added caldav support\nMultiple calendars can be displayed in one widget\nAdded more widget settings\nState structure changed\nAppointments are now shown in the popup\nSome internal functions revised\nFixed an error when saving the authentication data",
+                "de": "Caldav-Unterstützung hinzugefügt\nIn einem Widget können mehrere Kalender angezeigt werden\nWeitere Widget-Einstellungen hinzugefügt\nStatestruktur geändert\nTermine werden jetzt im Popup angezeigt\nEinige interne Funktionen überarbeitet\nFehler beim Speichern der Authentifizierungsdaten behoben",
+                "ru": "Добавлена поддержка Caldav\nНесколько календарей могут отображаться в одном виджете\nДобавлены дополнительные настройки виджета\nГосударственное устройство изменилось\nНазначения теперь отображаются во всплывающем окне\nНекоторые внутренние функции пересмотрены\nИсправлена ошибка при сохранении данных аутентификации",
+                "pt": "Adicionado suporte ao caldav\nVários calendários podem ser exibidos em um widget\nAdicionadas mais configurações de widget\nEstrutura de estado alterada\nOs compromissos agora são mostrados no pop-up\nAlgumas funções internas revisadas\nCorrigido um erro ao salvar os dados de autenticação",
+                "nl": "Ondersteuning van caldav toegevoegd\nMeerdere agenda's kunnen in één widget worden weergegeven\nMeer widget-instellingen toegevoegd\nStaatsstructuur gewijzigd\nAfspraken worden nu getoond in de popup\nSommige interne functies herzien\nFout verholpen bij het opslaan van de authenticatiegegevens",
+                "fr": "Prise en charge de caldav ajoutée\nPlusieurs calendriers peuvent être affichés dans un widget\nAjout de plus de paramètres de widget\nLa structure de l'État a changé\nLes rendez-vous sont maintenant affichés dans la popup\nQuelques fonctions internes révisées\nCorrection d'une erreur lors de l'enregistrement des données d'authentification",
+                "it": "Aggiunto supporto caldav\nPiù calendari possono essere visualizzati in un widget\nAggiunte ulteriori impostazioni del widget\nLa struttura dello stato è cambiata\nGli appuntamenti sono ora mostrati nel popup\nAlcune funzioni interne sono state riviste\nRisolto un errore durante il salvataggio dei dati di autenticazione",
+                "es": "Se agregó soporte caldav\nSe pueden mostrar varios calendarios en un widget\nSe agregaron más configuraciones de widgets\nLa estructura del estado cambió\nLas citas ahora se muestran en la ventana emergente\nAlgunas funciones internas revisadas\nSe corrigió un error al guardar los datos de autenticación",
+                "pl": "Dodano obsługę caldav\nW jednym widżecie może być wyświetlanych wiele kalendarzy\nDodano więcej ustawień widżetów\nStruktura państwa uległa zmianie\nTerminy są teraz wyświetlane w wyskakującym okienku\nNiektóre funkcje wewnętrzne zostały zmienione\nNaprawiono błąd podczas zapisywania danych uwierzytelniających",
+                "zh-cn": "添加了caldav支持\n一个小部件中可以显示多个日历\n添加了更多小部件设置\n国家结构改变\n约会现在显示在弹出窗口中\n修改了一些内部功能\n修复了保存身份验证数据时的错误"
+            },
             "0.2.0": {
                 "en": "Multiple calendar support for one account\nCalendar color is now supported\nCalender states color, name, account added\nCalendar name is set as the state name\nFixed an issue where the credentials were not properly controlled\nThe google calendar name and color will be adopted",
                 "de": "Unterstützung mehrerer Kalender für ein Konto\nKalenderfarbe wird jetzt unterstützt\nNeue Kalenderstates color, name und account\nDer Kalendername wird als Statename festgelegt\nEs wurde ein Problem behoben, bei dem die Anmeldeinformationen nicht richtig kontrolliert wurden\nDer Name und die Farbe des Google-Kalenders werden übernommen",
@@ -54,16 +78,16 @@
             "zh-cn": "日历"
         },
         "desc": {
-            "en": "Connect to your google calendar",
-            "de": "Stellen Sie eine Verbindung zu Ihrem Google Kalender her",
-            "ru": "Подключитесь к своему календарю Google",
-            "pt": "Conecte-se ao seu calendário do Google",
-            "nl": "Maak verbinding met uw Google-agenda",
-            "fr": "Connectez-vous à votre calendrier Google",
-            "it": "Collegati al tuo calendario di Google",
-            "es": "Conéctate a tu calendario de google",
-            "pl": "Połącz się ze swoim kalendarzem Google",
-            "zh-cn": "连接到您的Google日历"
+            "en": "Connect to your google and caldav calendar",
+            "de": "Stellen Sie eine Verbindung zu Ihrem Google- und CalDAV-Kalender her",
+            "ru": "Подключитесь к своему календарю Google и Caldav",
+            "pt": "Conecte-se ao seu calendário google e caldav",
+            "nl": "Maak verbinding met uw Google- en Caldav-agenda",
+            "fr": "Connectez-vous à votre calendrier Google et Caldav",
+            "it": "Collegati al tuo calendario google e caldav",
+            "es": "Conéctese a su calendario de google y caldav",
+            "pl": "Połącz się z kalendarzem Google i Caldav",
+            "zh-cn": "连接到您的Google和Caldav日历"
         },
         "authors": [
             "WLAN-Kabel wlan-kabel@outlook.de"
@@ -100,17 +124,35 @@
     "native": {
         "port": 8095,
         "googleActive": false,
+        "caldavActive": false,
         "fqdn": "localhost",
         "google": [
             {
                 "active": false,
                 "name": "",
+                "id": "",
+                "email": "",
                 "account": "",
                 "accessToken": "",
                 "refreshToken": "",
-                "id": "",
-                "email": "",
+                "ctag": "",
+                "days": 7,
                 "color": "#000000"
+            }
+        ],
+        "caldav": [
+            {
+                "active": false,
+                "name": "",
+                "id": "",
+                "hostname": "https://nextcloud.example.com",
+                "username": "max.mustermann@example.com",
+                "password": "2SS8W2Zve34nWZzt",
+                "ctag": "",
+                "days": 7,
+                "color": "#000000",
+                "path": "",
+                "listIsLoaded": false
             }
         ]
     },

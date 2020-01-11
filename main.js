@@ -13,6 +13,9 @@ const express = require('express');
 const http = require('http');
 const cron = require('node-cron');
 const {google} = require('googleapis');
+const ical = require('./lib/ical');
+const nextcloud = require('./lib/nextcloud');
+const util = require('./lib/utils');
 
 let cronJob;
 let server;
@@ -59,25 +62,63 @@ class Calendar extends utils.Adapter {
         if(hasCalendarWithoutGrantPermission(adapter.config)) {
             server = initServer(adapter.config);
         }
+        
+        for(let i = 0; i < adapter.config.caldav.length; i++) {
 
-        for(let i = 0; i < adapter.config.google.length; i++) {
+            const calendar = adapter.config.caldav[i];
 
-            const calendar = adapter.config.google[i];
+            if(calendar.active && !calendar.listIsLoaded) {
 
-            if(adapter.config.googleActive && calendar.active && calendar.id != '') {
+                let ids;
+
+                try {
+                    ids = await getCaldavCalendarIds(calendar);
+                } catch(err) {
+                    adapter.log.error(err);
+                }
+                
+                if(ids) {
+                    updateConfig({
+                        caldav: handleCaldavCalendarIds(adapter.config, i, ids)
+                    });
+                }
+            }
+        }
+
+        const calendars = [
+            ...adapter.config.google,
+            ...adapter.config.caldav
+        ];
+
+        for(let i = 0; i < calendars.length; i++) {
+
+            //const calendar = adapter.config.google[i];
+
+            const calendar = calendars[i];
+            
+            if(adapter.config.caldavActive && calendar.active && calendar.username != '' && calendar.hostname != '' && calendar.password != '' && calendar.id != '') {
+                addDevice(calendar.id, calendar.name);
+                addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
+                addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
+                addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
+            } else if(adapter.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '') {
                 addDevice(calendar.id, calendar.name);
                 addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.account);
                 addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
                 addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
             } else {
-                removeDevice(calendar.id);
+                if(calendar.id != '') removeDevice(calendar.id);
             }
         }
 
         if(this.config.googleActive) {
             if(oauth2) {
                 startCalendarSchedule(adapter.config, oauth2);
+            } else if(this.config.caldavActive) {
+                startCalendarSchedule(adapter.config);
             }
+        } else if(this.config.caldavActive) {
+            startCalendarSchedule(adapter.config);
         }
 
         // in this template all states changes inside the adapters namespace are subscribed
@@ -172,23 +213,136 @@ async function updateConfig(newConfig) {
     await adapter.setForeignObjectAsync(`system.adapter.${adapter.namespace}`, adapterObj);
 }
 
-function startCalendarSchedule(config, auth) {
+async function startCalendarSchedule(config, auth = null) {
 
     const googleCalendars = config.google;
+    const caldavCalendars = config.caldav;
     
     for(let i = 0; i < googleCalendars.length; i++) {
         if(googleCalendars[i].active) {
-            getGoogleCalendarEvents(googleCalendars[i], auth, i);
+
+            try {
+                const events = await getGoogleCalendarEvents(googleCalendars[i], auth, i);
+                
+                handleCalendarEvents(googleCalendars[i], events);
+            } catch(err) {
+                adapter.log.error(err);
+            }
         }
     }
 
-    cronJob = cron.schedule('*/5 * * * *', () => {
+    for(let i = 0; i < caldavCalendars.length; i++) {
+        if(caldavCalendars[i].active) {
+
+            try {
+                const events = await getCaldavCalendarEvents(caldavCalendars[i]);
+                
+                handleCalendarEvents(caldavCalendars[i], events);
+            } catch(err) {
+                adapter.log.error(err);
+            }
+        }
+    }
+
+    cronJob = cron.schedule('*/10 * * * *', async () => {
         for(let i = 0; i < googleCalendars.length; i++) {
             if(googleCalendars[i].active) {
-                getGoogleCalendarEvents(googleCalendars[i], auth, i);
+
+                try {
+                    const events = await getGoogleCalendarEvents(googleCalendars[i], auth, i);
+
+                    handleCalendarEvents(googleCalendars[i], events);
+                } catch(err) {
+                    adapter.log.error(err);
+                }
+            }
+        }
+
+        for(let i = 0; i < caldavCalendars.length; i++) {
+            if(caldavCalendars[i].active) {
+    
+                try {
+                    const events = await getCaldavCalendarEvents(caldavCalendars[i]);
+    
+                    handleCalendarEvents(caldavCalendars[i], events);
+                } catch(err) {
+                    adapter.log.error(err);
+                }
             }
         }
     });
+
+    adapter.log.debug('Cron job started');
+}
+
+async function getCaldavCalendarIds(calendar) {
+
+    let calendarIds;
+
+    try {
+        calendarIds = await nextcloud.queryCalendarList(calendar.hostname, calendar.username, calendar.password);
+    } catch(err) {
+        adapter.log.error(err);
+    }
+
+    return calendarIds;
+}
+
+function handleCaldavCalendarIds(config, index, ids) {
+
+    let firstIsSet = false;
+
+    const configCaldav = config.caldav;
+    
+    for(let i = 0; i < ids.length; i++) {
+        
+        if(ids[i].propstat[0].status[0].includes('200')) {
+
+            if(!firstIsSet) {
+                
+                let id = new Buffer((ids[i].href[0] || '')).toString('base64').replace(/[+/= ]/g, '');
+                id = id.substring(id.length - 31, id.length - 1);
+                
+                adapter.log.info(`Set calendar name "${index}": Old name => "${configCaldav[index].name}" New name "${ids[i].propstat[0].prop[0].displayname[0]}"`);
+                
+                configCaldav[index].active = true;
+                configCaldav[index].path = ids[i].href[0];
+                configCaldav[index].name = ids[i].propstat[0].prop[0].displayname[0];
+                configCaldav[index].id =  id;
+                configCaldav[index].ctag = ids[i].propstat[0].prop[0].getctag[0] || '';
+                configCaldav[index].color = ids[i].propstat[0].prop[0]['calendar-color'][0]._ || '#000000';
+                configCaldav[index].listIsLoaded = true;
+
+                firstIsSet = true;
+            } else {
+
+                const calendar = ids[i];
+                const configCalendar = {};
+                
+                adapter.log.info(`Found calendar in account "${configCaldav[index].username}": Calendar "${calendar.propstat[0].prop[0].displayname[0]}"`);
+                adapter.log.info(`The calendar "${calendar.propstat[0].prop[0].displayname[0]}" was added. You can activate the calendar in the config.`);
+                
+                let id = new Buffer((calendar.href[0] || '')).toString('base64').replace(/[+/= ]/g, '');
+                id = id.substring(id.length - 31, id.length - 1);
+
+                configCalendar.active = false;
+                configCalendar.name = calendar.propstat[0].prop[0].displayname[0];
+                configCalendar.id = id;
+                configCalendar.hostname = configCaldav[index].hostname;
+                configCalendar.username = configCaldav[index].username;
+                configCalendar.password = configCaldav[index].password;
+                configCalendar.ctag = calendar.propstat[0].prop[0].getctag[0] || '';
+                configCalendar.days = configCaldav[index].days;
+                configCalendar.color = calendar.propstat[0].prop[0]['calendar-color'][0]._ || '#000000';
+                configCalendar.path = calendar.href[0];
+                configCalendar.listIsLoaded = true;
+        
+                configCaldav.push(configCalendar);
+            }
+        }
+    }
+    
+    return configCaldav;
 }
 
 function sameDate(targetDate, calendarDate) {
@@ -235,26 +389,26 @@ function removeDevice(id) {
         id = adapter.namespace + '.' + id;
     }
 
-    adapter.log.debug(`Delete device => ${id}`);
-    adapter.delObject(id);
-    
-    adapter.getChannels(id + '*', (err, states) => {
-        if(!err) {
-            for (let id in states) {
-                adapter.log.debug(`Delete channel => ${id}`);
-                adapter.delObject(id);
-            }
-        }
-    });
-
     adapter.getStates(id + '*', (err, states) => {
         if(!err) {
             for (let id in states) {
                 adapter.log.debug(`Delete state => ${id}`);
                 adapter.delObject(id);
             }
-        }
+        } else adapter.log.error(err);
     });
+
+    adapter.getChannels(id, (err, states) => {
+        if(!err) {
+            for (let id in states) {
+                adapter.log.debug(`Delete channel => ${states[id]._id}`);
+                adapter.delObject(states[id]._id);
+            }
+        } else adapter.log.error(err);
+    });
+
+    adapter.log.debug(`Delete device => ${id}`);
+    adapter.delObject(id);
 }
 
 function addState(id, name, type, role, value = null) {
@@ -316,78 +470,143 @@ function removeDeleted(oldList, newList, calendarId) {
     }
 }
 
-function getGoogleCalendarEvents(calendar, auth, index) {
+async function getCaldavCalendarEvents(calendar) {
 
-    if(calendar.accessToken /*&& calendar.refreshToken && calendar.refreshToken != ''*/ && calendar.id != '') {
+    if(adapter.config.caldavActive && calendar.active && calendar.username != '' &&
+        calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '') {
 
-        const oauth2 = auth;
+        let events;
+        const list = [];
 
-        oauth2.setCredentials({
-            access_token: calendar.accessToken,
-            refresh_token: calendar.refreshToken
-        });
+        try {
 
-        const cal = google.calendar({
-            version: 'v3',
-            auth: oauth2
-        });
+            events = await nextcloud.queryEvents(calendar.hostname, calendar.path, calendar.username, calendar.password);
 
-        cal.events.list({
-            calendarId: calendar.email,
-            timeMin: getDatetime(),
-            timeMax: getDatetime(((parseInt(calendar.days) > 0) ? parseInt(calendar.days) : 7), 23, 59, 59),
-            singleEvents: true,
-            orderBy: 'startTime'
-        }, (err, res) => {
-            if (err) {
-                adapter.log.error(`The Google API returned an error. Affected calendar: ${calendar.name}`);
-                adapter.log.error(err);
-                return;
-            }
+        } catch(err) {
+            adapter.log.error(err);
+        }
 
-            if(res) {
+        for(let i = 0; i < events.length; i++) {
 
-                const items = res.data.items;
+            const calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+            
+            list.push(util.normalizeEvent(calendar.events[0].summary, calendar.events[0].description, calendar.events[0].dtstart.val, calendar.events[0].dtend.val));
+        }
 
-                if(items) {
+        adapter.log.info(`Updated calendar "${calendar.name}"`);
 
-                    const dayCount = new Map();
+        return list;
+    }
+}
 
-                    for (let i = 0; i < items.length; i++) {
+async function getGoogleCalendarEvents(calendar, auth, index) {
 
-                        for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
+    return new Promise((resolve, reject) => {
 
-                            addChannel(`${calendar.id}.${j}`, `Day ${j}`);
+        if(calendar.accessToken && calendar.accessToken != '' && calendar.refreshToken && calendar.refreshToken != '' && calendar.id != '') {
 
-                            if(sameDate(getDatetime(j), (items[i].start.date) ? items[i].start.date : items[i].start.dateTime)) {
+            const oauth2 = auth;
+    
+            oauth2.setCredentials({
+                access_token: calendar.accessToken,
+                refresh_token: calendar.refreshToken
+            });
+    
+            const cal = google.calendar({
+                version: 'v3',
+                auth: oauth2
+            });
+    
+            cal.events.list({
+                calendarId: calendar.email,
+                timeMin: getDatetime(),
+                timeMax: getDatetime(((parseInt(calendar.days) > 0) ? parseInt(calendar.days) : 7), 23, 59, 59),
+                singleEvents: true,
+                orderBy: 'startTime'
+            }, (err, res) => {
+                if(err) {
+                    adapter.log.error(`The Google API returned an error. Affected calendar: ${calendar.name}`);
+                    reject(err);
+                } else if(res) {
+                    
+                    const list = [];
 
-                                const objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`;
-
-                                addChannel(objNamespace, `Event ${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`);
-
-                                addState(`${objNamespace}.summary`, 'Summary', 'string', 'event.summary', items[i].summary);
-                                addState(`${objNamespace}.description`, 'Description', 'string', 'event.description', items[i].description);
-                                addState(`${objNamespace}.startTime`, 'Start Time', 'string', 'event.startTime', (items[i].start.date || items[i].start.dateTime));
-                                addState(`${objNamespace}.endTime`, 'End Time', 'string', 'event.endTime', (items[i].end.date || items[i].end.dateTime));
-
-                                dayCount.set(j, (dayCount.get(j) > 0) ? dayCount.get(j) + 1: 1);
-                            }
-
-                            addState(`${calendar.id}.${j}.date`, 'Date', 'string', 'calendar.date', getDatetime(j));
-                            addState(`${calendar.id}.${j}.events`, 'Event count', 'number', 'calendar.events', (dayCount.has(j)) ? dayCount.get(j) : '0');
-                        }
+                    for(let i = 0; i < res.data.items.length; i++) {
+                        list.push(util.normalizeEvent(res.data.items[i].summary, res.data.items[i].description,
+                            (res.data.items[i].start.date || res.data.items[i].start.dateTime), (res.data.items[i].end.date || res.data.items[i].end.dateTime)));
                     }
 
-                    adapter.getChannels(function (err, channels) {
-                        if(err) adapter.log.error(err);
-                        removeDeleted(channels, dayCount, calendar.id);
-                    });
+                    resolve(list);
+    
+                    adapter.log.info(`Updated calendar "${calendar.name}"`);
                 }
+            });
+        } else {
+            adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.config.fqdn}:${adapter.config.port}/google/login/${index}`);
+            reject('No permission granted.');
+        }
+    });
+}
 
-                adapter.log.info(`Updated calendar "${calendar.name}"`);
+async function handleCalendarEvents(calendar, events) {
+
+    if(events) {
+
+        const dayCount = new Map();
+
+        const dayEvents = new Map();
+
+        for(let i = 0; i <= ((calendar.days > 0) ? calendar.days : 7); i++) {
+            dayEvents.set(i, []);
+        }
+
+        for (let i = 0; i < events.length; i++) {
+
+            for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
+
+                //addChannel(`${calendar.id}.${j}`, `Day ${j}`);
+
+                if(sameDate(getDatetime(j), events[i].startTime)) {
+
+                    //const objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`;
+
+                    //addChannel(objNamespace, `Event ${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`);
+
+                    //const eventObj = {};
+                    const dayObj = dayEvents.get(j) || [];
+
+                    //addState(`${objNamespace}.summary`, 'Summary', 'string', 'event.summary', events[i].summary);
+                    //addState(`${objNamespace}.description`, 'Description', 'string', 'event.description', events[i].description);
+                    //addState(`${objNamespace}.startTime`, 'Start Time', 'string', 'event.startTime', (events[i].start.date || events[i].start.dateTime));
+                    //addState(`${objNamespace}.endTime`, 'End Time', 'string', 'event.endTime', (events[i].end.date.substring(0, 9) || events[i].end.dateTime.substring(0, 9)));
+
+                    /*eventObj.summary = events[i].summary;
+                    eventObj.description = events[i].description;
+                    eventObj.startTime = events[i].startTime;
+                    eventObj.endTime = events[i].endTime;*/
+
+                    dayObj.push(events[i]);
+
+                    dayEvents.set(j, dayObj);
+
+                    dayCount.set(j, (dayCount.get(j) > 0) ? dayCount.get(j) + 1: 1);
+                }
             }
+        }
+
+        for(let i = 0; i < dayEvents.size; i++) {
+            addChannel(`${calendar.id}.${i}`, `Day ${i}`);
+            addState(`${calendar.id}.${i}.events`, 'Events', 'string', 'calendar.events', JSON.stringify(dayEvents.get(i)));
+            addState(`${calendar.id}.${i}.date`, 'Date', 'string', 'calendar.date', getDatetime(i).substring(0, 10));
+            addState(`${calendar.id}.${i}.eventsNumber`, 'Number of events', 'number', 'calendar.events', (dayCount.has(i)) ? dayCount.get(i) : '0');
+        }
+
+        adapter.getChannels((err, channels) => {
+            if(err) {
+                adapter.log.error(err);
+            } else removeDeleted(channels, dayCount, calendar.id);
         });
-    } else adapter.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${adapter.config.fqdn}:${adapter.config.port}/google/login/${index}`);
+    }
 }
 
 function hasCalendarWithoutGrantPermission(config) {
@@ -398,7 +617,8 @@ function hasCalendarWithoutGrantPermission(config) {
 
         for(let i = 0; i < googleCalendars.length; i++) {
             if(googleCalendars[i].active) {
-                if(!googleCalendars[i].accessToken || googleCalendars[i].accessToken == '') {
+                if(!googleCalendars[i].accessToken || googleCalendars[i].accessToken == '' ||
+                    !googleCalendars[i].refreshToken || googleCalendars[i].refreshToken == '') {
                     return true;
                 }
             }
@@ -406,6 +626,24 @@ function hasCalendarWithoutGrantPermission(config) {
     }
 
     return false;
+}
+
+async function getGoogleAuthenticationTokens(code) {
+    
+    return new Promise((resolve, reject) => {
+
+        oauth2.getToken(code, (err, tokens) => {
+            if (err) {
+                reject(err);
+            } else {
+            
+                adapter.log.debug(`Received tokens for google calendar`);
+
+                resolve(tokens);
+            }
+        });
+
+    });
 }
 
 function getGoogleAuthentication(settings) {
@@ -419,32 +657,29 @@ function getGoogleAuthentication(settings) {
     return oauth2;
 }
 
-function getGoogleCalendarId(index, auth, callback) {
+async function getGoogleCalendarIds(auth) {
 
-    const id = {};
+    return new Promise((resolve, reject) => {
 
-    const cal = google.calendar({
-        version: 'v3',
-        auth: auth
-    });
+        const cal = google.calendar({
+            version: 'v3',
+            auth: auth
+        });
 
-    cal.calendarList.list((err, res) => {
-        if (err) {
-            adapter.log.error('The Google API returned an error.');
-            adapter.log.error(err);
-            callback(id);
-        }
+        cal.calendarList.list((err, res) => {
+            if(err) {
+                adapter.log.error('The Google API returned an error.');
+                reject(err);
+            } else if(res) {
 
-        if(res) {
-            const items = res.data.items;
+                const id = {};
 
-            if(items) {
-                if(items.length === 0) {
-                    adapter.log.warn('No calendar id found.');
-                } else {
-
+                const items = res.data.items;
+    
+                if(items && items.length > 0) {
+        
                     const calendars = [];
-
+    
                     for(let i = 0; i < items.length; i++) {
                         
                         const calendar = {};
@@ -454,36 +689,73 @@ function getGoogleCalendarId(index, auth, callback) {
                         }
 
                         calendar.email = items[i].id;
-                        calendar.id = new Buffer((items[i].id || '')).toString('base64').replace('=', '').replace('+', '').replace('/', '');
+                        calendar.id = new Buffer((items[i].id || '')).toString('base64').replace(/[+/= ]/g, '').substring(0, 30);
                         calendar.summary = items[i].summaryOverride || items[i].summary;
                         calendar.color = items[i].backgroundColor || '#000000';
 
                         calendars.push(calendar);
                     }
-
+    
                     id.calendars = calendars;
 
-                    callback(id);
-                }
+                    resolve(id);
+
+                } else reject('No calendar found.');
             }
-        }
+        });
     });
+}
+
+function handleCalendarIds(config, index, ids, tokens) {
+
+    const configGoogle = config.google;
+
+    adapter.log.info(`Set calendar name "${index}": Old name => "${configGoogle[index].name}" New name "${ids.calendars[0].summary}"`);
+
+    configGoogle[index].active = true;
+    configGoogle[index].account = ids.account;
+    configGoogle[index].name = ids.calendars[0].summary;
+    configGoogle[index].id = ids.calendars[0].id;
+    configGoogle[index].email = ids.calendars[0].email;
+    configGoogle[index].accessToken = tokens.access_token;
+    configGoogle[index].refreshToken = tokens.refresh_token;
+    configGoogle[index].color = ids.calendars[0].color;
+
+    for(let i = 1; i < ids.calendars.length; i++) {
+
+        const calendar = ids.calendars[i];
+        const configCalendar = {};
+        
+        adapter.log.info(`Found calendar in account "${ids.account}": Calendar "${calendar.summary}"`);
+        adapter.log.info(`The calendar "${calendar.summary}" was added. You can activate the calendar in the config.`);
+
+        configCalendar.active = false;
+        configCalendar.account = ids.account;
+        configCalendar.name = `${ids.calendars[0].summary} ${calendar.summary}`;
+        configCalendar.id = calendar.id;
+        configCalendar.email = calendar.email;
+        configCalendar.accessToken = tokens.access_token;
+        configCalendar.refreshToken = tokens.refresh_token;
+        configCalendar.days = configGoogle[index].days;
+        configCalendar.color = calendar.color;
+
+        configGoogle.push(configCalendar);
+    }
+
+    return configGoogle;
 }
 
 function initServer(settings) {
 
-    let server;
+    const server = {};
 
     if(settings.port) {
 
-        server = {
-            app: express(),
-            server: null ,
-            settings:  settings
-        };
+        server.app = express();
+        server.settings = settings;
 
         if(oauth2) {
-            server.app.get('/google/login/:id', function (req, res) {
+            server.app.get('/google/login/:id', (req, res) => {
 
                 const id = req.params.id;
                 
@@ -508,80 +780,69 @@ function initServer(settings) {
                 } else res.send(`Cannot find calendar ${req.params.id}.`);
             });
 
-            server.app.get('/google/success', function (req, res) {
+            server.app.get('/google/success', (req, res) => {
                 res.send('Done');
             });
 
-            server.app.get('/google', function (req, res) {
+            server.app.get('/google', async (req, res) => {
                 if(req.query) {
                     if(req.query.state) {
                         if(req.query.state < settings.google.length && req.query.state >= 0) {
                             if(req.query.scope) {
+
                                 const scope = req.query.scope.split(' ');
+                                const index = req.query.state;
                                 let isRightScope = false;
                                 
                                 for(let i = 0; i < scope.length; i++) {
                                     if(scope[i] == googleScope) {
 
-                                        oauth2.getToken(req.query.code, function(err, tokens) {
-                                            if (err) {
-                                                adapter.log.error(err);
-                                                res.send(err);
-                                                return;
-                                            }
-                                        
-                                            adapter.log.info(`Received rights for google calendar "${req.query.state}" (${settings.google[req.query.state].name})`);
-                                            
-                                            //settings.google[req.query.state].oauth2 = oauth2;
-                                            oauth2.setCredentials(tokens);
-
-                                            getGoogleCalendarId(req.query.state, oauth2, (id) => {
-
-                                                const configGoogle = adapter.config.google;
-
-                                                adapter.log.info(`Set calendar name "${req.query.state}": Old name => "${configGoogle[req.query.state].name}" New name "${id.calendars[0].summary}"`);
-
-                                                configGoogle[req.query.state].active = true;
-                                                configGoogle[req.query.state].account = id.account;
-                                                configGoogle[req.query.state].name = id.calendars[0].summary;
-                                                configGoogle[req.query.state].id = id.calendars[0].id;
-                                                configGoogle[req.query.state].email = id.calendars[0].email;
-                                                configGoogle[req.query.state].accessToken = tokens.access_token;
-                                                configGoogle[req.query.state].refreshToken = tokens.refresh_token;
-                                                configGoogle[req.query.state].color = id.calendars[0].color;
-
-                                                for(let i = 1; i < id.calendars.length; i++) {
-
-                                                    const calendar = id.calendars[i];
-                                                    const configCalendar = {};
-                                                    
-                                                    adapter.log.info(`Found calendar in account "${id.account}": Calendar "${calendar.summary}"`);
-                                                    adapter.log.info(`The calendar "${calendar.summary}" was added. You can activate the calendar in the config.`);
-
-                                                    configCalendar.active = false;
-                                                    configCalendar.account = id.account;
-                                                    configCalendar.name = `${id.calendars[0].summary} ${calendar.summary}`;
-                                                    configCalendar.id = calendar.id;
-                                                    configCalendar.email = calendar.email;
-                                                    configCalendar.accessToken = tokens.access_token;
-                                                    configCalendar.refreshToken = tokens.refresh_token;
-                                                    configCalendar.days = configGoogle[req.query.state].days;
-                                                    configCalendar.color = calendar.color;
-
-                                                    configGoogle.push(configCalendar);
-                                                }
-
-                                                updateConfig({
-                                                    google: configGoogle
-                                                });
-                                            });
-                                        });
-
                                         isRightScope = true;
+
+                                        i = scope.length;
                                     }
                                 }
 
                                 if(isRightScope) {
+
+                                    let tokens;
+
+                                    try {
+                                        tokens = await getGoogleAuthenticationTokens(req.query.code);
+
+                                        if(!tokens.refresh_token) {
+
+                                            const errorMessage = `No refresh token received for google calendar "${index}" (${settings.google[index].name}). Please remove app access from yout google account and try again.`;
+                                            
+                                            adapter.log.error(errorMessage);
+                                            res.send(errorMessage);
+                                            return;
+                                        } else {
+                                            adapter.log.info(`Received tokens for google calendar "${index}" (${settings.google[index].name})`);
+                                        }
+                                    } catch(err) {
+                                        adapter.log.error(err);
+                                        res.send(err);
+                                        return;
+                                    }
+
+                                    oauth2.setCredentials(tokens);
+
+                                    let calendarIds;
+
+                                    try {
+                                        calendarIds = await getGoogleCalendarIds(oauth2);
+                                        adapter.log.info(`Received calender ids for google calendar "${index}" (${settings.google[index].name})`);
+                                    } catch (err) {
+                                        adapter.log.error(err);
+                                        res.send(err);
+                                        return;
+                                    }
+
+                                    updateConfig({
+                                        google: handleCalendarIds(settings, index, calendarIds, tokens)
+                                    });
+
                                     res.redirect('/google/success');
                                 } else res.send('Wrong scope were defined');
                             } else res.send('No scope were defined');
@@ -597,7 +858,7 @@ function initServer(settings) {
     }
 
     if(server && server.server) {
-        adapter.getPort(settings.port, function (port) {
+        adapter.getPort(settings.port, (port) => {
             if (port != settings.port && !adapter.config.findNextPort) {
                 adapter.log.error('Port ' + settings.port + ' already in use');
                 process.exit(1);

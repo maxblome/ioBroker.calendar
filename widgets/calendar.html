@@ -101,488 +101,561 @@
 -->
 <script>
 
-var events = new Array();
-var date_memory;
-var color;
+    // Add words for bars
+    if (vis.editMode) {
+        $.extend(systemDictionary, {
+            "count":           {"en": "calendar count", "de": "Kalenderanzahl", "ru": "номер календаря"},
+            "monthYearColor":  {"en": "month color",    "de": "Monatsfarbe",    "ru": "цвет месяца"},
+            "buttonColor":     {"en": "button color",   "de": "Knopffarbe",     "ru": "цвет кнопки"},
+            "dayColor":        {"en": "weekday color",  "de": "Wochentagsfarbe","ru": "цвет дня недели"},
+            "dateColor":       {"en": "date color",     "de": "Datumsfarbe",    "ru": "цвет даты"},
+            "dateBackgroundColor":       {"en": "date background color",     "de": "Datumshintergrundfarbe",    "ru": "цвет фона даты"},
+            "group_calendar":       {"en": "additional calendars",     "de": "zusätzliche Kalender",    "ru": "дополнительные календари"},
+            "eventTextColor":       {"en": "event text color",     "de": "Ereignistextfarbe",    "ru": "цвет текста события"},
+            "popupColor":       {"en": "popup color",     "de": "Popup-Farbe",    "ru": "всплывающий цвет"},
+            "popupCloseColor":       {"en": "close button color",     "de": "Farbe der Schaltfläche \"Schließen\"",    "ru": "цвет кнопки закрытия"},
+            "popupBackgroundColor":       {"en": "popup background color",     "de": "Popup-Hintergrundfarbe",    "ru": "всплывающий цвет фона"},
+        });
+    }
 
-// get current list
-function renderPage(wid) {
-    vis.conn.getStates(wid + '*', function (err, states) {
+        let events = new Map();
+        let date_memory;
+        let color = new Map();
+        let isLoaded = false;
 
-        //events = states;
-
-        for(var state in states) {
+        function iniCalendar(wid) {
             
-            if(state.endsWith("events")) {
-
-                var day = state.replace("events", "");
-                var eventCount = states[state].val;
-
-                var newDate = {};
-                newDate.date = states[day + "date"].val;
-                newDate.eventCount = eventCount;
-
-                var newArray = [];
-
-                for(var i = 0; i < eventCount; i++) {
-                    var newEvent = {};
-                    newEvent.description = states[day + i + ".description"].val
-                    newEvent.endTime = states[day + i + ".endTime"].val
-                    newEvent.startTime = states[day + i + ".startTime"].val
-                    newEvent.summary = states[day + i + ".summary"].val
-
-                    newArray.push(newEvent);
-                }
-
-                newDate.events = newArray;
-                events.push(newDate);
-            } else if(state.endsWith("color")) {
-
-                color = states[state].val;
-            }
-        }
-    });
-}
-
-function colorizeEvents(color) {
-    var calendarEvents = document.getElementsByClassName("calendar-event")
-
-    for (var k = 0; k < calendarEvents.length; k++) {
-        calendarEvents[k].style.backgroundColor = color;
-    }
-}
-
-    function iniCalendar() {
-        //heutiges Datum setzen
-        var d = new Date();
-        //aktuelles Datum speichern
-        setDateToMemory(d);
-        //Calender laden
-        loadcalendar();
-    }
-
-    /**
-    * Läd die Tabelle mit dem übergebenen Datum (Monat)
-    */
-    function loadcalendar()
-    {
-    //aktuelles Datum holen (1. des Monats)
-    var d = getDateFromMemory();
-    //Monat ermitteln aus this_date (zählen beginnt bei 0, daher +1)
-    var m = d.getMonth();
-    //Jahr ermitteln aus this_date (YYYY)
-    var y = d.getFullYear();
-    //Monat und Jahr eintragen
-    //document.all.calendar_month.innerHTML = getMonthname(m+1) + " " + y;
-    document.getElementById("calendar_month").innerHTML = getMonthname(m+1) + " " + y;
-    
-    //ersten Tag des Monats festlegen
-    var firstD = d;
-    firstD.setDate(1);
-    //Wochentag ermitteln vom 1. des übergebenen Monats (Wochentag aus firstD)
-    var dateDay = firstD.getDay(); //So = 0, Mo = 1 … Sa = 6
-    //Sonntag soll den Wert 7 darstellen -> Mo = 1 … So = 7
-    dateDay = (dateDay == 0) ? 7: dateDay;
-    //Speicher für aktuelle Zelle
-    var entry = "";
-    //Speicher für aktuellen Tag
-    var zahl = "";
-    //heutiges Datum ermitteln
-    var hD = new Date();
-    //ist event
-    //falls event, dann darf der Rahmen
-    //nicht vom isHolyday überschrieben werden
-    var bEvent = false;
-
-    //Alle Kalender Spalten durchzählen
-    for (var i = 1; i <= 42; i++)
-    {
-    bEvent = false;
-
-    //holen der aktuellen Zelle
-    entry = document.getElementById("calendar-entry-" + i);
-    //errechnen der Tages Zahl
-    zahl = (i + 1) - dateDay;
-    //datum zusammenschreiben
-    var dx = new Date(y, m, zahl);
-
-    //Eintragen der Daten ab ersten Tag im Monat und wenn es ein gültiges Datum ist
-    if (i >= dateDay && isValidDate(y, m, zahl))
-    {
-    //entry.innerHTML = "<a class=calendar_link href=javascript:putDate(" + zahl +")>" + zahl + "</a>";
-    entry.innerHTML = "<div>" + zahl + "</div>";
-
-    if(entry.classList.contains("calendar-entry-invisible")) entry.classList.remove("calendar-entry-invisible");
-    
-    //Listener hinzufügen
-    entry.onclick = function(event) {openDateDetails(event.currentTarget.children[0].innerHTML)};
-    
-    //Events hinzufügen
-    entry.appendChild(getEvents(y, m, zahl));
-
-    colorizeEvents(color);
-
-    //Wenn Tag ein Feiertag ist
-    /*if (isHoliday(m, zahl)) {
-        entry.style.color="#FF0000";
-    } else {
-        if (!bEvent) entry.style.color="#000000";
-    }*/
-    
-    //heutiges Datum hervorheben
-    if (hD.getDate() == dx.getDate() &&
-    hD.getMonth() == dx.getMonth() &&
-    hD.getYear() == dx.getYear()) {
-        if(!entry.classList.contains("calendar-entry-today")) entry.classList.add("calendar-entry-today");
-    } else {
-        if(entry.classList.contains("calendar-entry-today")) entry.classList.remove("calendar-entry-today");
-    }
-
-    }
-    else
-    {
-    entry.innerHTML = "";
-
-    if (i>= dateDay)
-    {//Wenn Kalenderende
-    //Zelle = hidden
-    //entry.hidden = true;
-    //entry.style.border = "0px"; 
-    if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
-    }
-    else
-    {//Wenn Kalenderanfang
-    //Border-width = 0px
-    //entry.style.border = "0px";
-    if(!entry.classList.contains("calendar-entry-invisible")) entry.classList.add("calendar-entry-invisible");
-    }
-    }
-    }
-    }
-
-    /**
-    * schaltet einen Monat Weiter
-    */
-    function nextMonth() {
-        var d = getDateFromMemory();
-        var m = d.getMonth() + 1;
-        var y = d.getFullYear();
-
-        //Falls Jahres wechsel
-        if ((m + 1) > 12) {
-            m = 0;
-            y = y + 1;
+            let d = new Date();
+            
+            setDateToMemory(d);
+            
+            loadCalendar(wid);
         }
 
-        d = new Date(y, m, 01);
-        setDateToMemory(d);
-        loadcalendar();
-    }
-    /**
-    * schaltet einen Monat zurück
-    */
-    function prevMonth() {
-    var d = getDateFromMemory();
-    var m = d.getMonth()+1;
-    var y = d.getFullYear();
-    //Falls Jahres1wechsel
-    if ((m-1)<1)
-    {
-    m = 11;
-    y = y - 1;
-    }
-    else
-    {
-    m = m - 2;
-    }
-    d = new Date(y,m,01);
-    setDateToMemory(d);
-    loadcalendar();
-    }
+        async function renderPage(oid, data) {
 
-    /**
-    * Ist ein Datum gültig
-    * @param y: Jahr
-    * @param m: Monat
-    * @param d: Tag
-    * @return true = gültig, false = ungültig
-    */
-    function isValidDate(y, m, d) {
-        //–Gibt Datum des letzten Tag des Monats aus–
-        var thisDate = new Date(y, m, 1);
-        //einen Tag weiter schalten
-        thisDate.setMonth(thisDate.getMonth() + 1);
-        //vom ersten Tag des nächsten monats
-        //ein Tag abziehen
-        thisDate.setTime(thisDate.getTime() - 12*3600*1000)
+            let ids = [];
 
-        if (d>thisDate.getDate()) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+            ids.push({id: oid, color: data.attr('eventTextColor'), loaded: false});
 
-    /**
-* setzt das übergebene Datum in die Speicherzelle
-* @param d: datum zum schreiben in die Speicherzelle
-*/
-function setDateToMemory(d) {
-    //document.getElementById("date_memory").innerHTML = d.getFullYear() + "," + (d.getMonth() + 1) + "," + d.getDate();
-    date_memory = d.getFullYear() + "," + (d.getMonth() + 1) + "," + d.getDate();
-}
-/**
-* Gibt das Datum aus der Speicherzelle zurück
-* @return: datum in Date format
-*/
-function getDateFromMemory() {
-    //var s = document.getElementById("date_memory").innerHTML;
-    var s = date_memory;
-    var z = s.split(",");
-    return new Date(z[0], z[1] - 1, z[2]);
-}
+            for(let i = 0; i <= data.count; i++) {
+                if(data.attr('oid' + i)) {
 
-/**
-* Gibt den Monatsnamen anhand der Monatsnummer zurück
-* @param monthnumber: Monatsnummer (1-12)
-*/
-function getMonthname(monthnumber) {
-    switch(monthnumber) {
-        case 1: return "Januar"; break;
-        case 2: return "Februar"; break;
-        case 3: return "März"; break;
-        case 4: return "April"; break;
-        case 5: return "Mai"; break;
-        case 6: return "Juni"; break;
-        case 7: return "Juli"; break;
-        case 8: return "August"; break;
-        case 9: return "September"; break;
-        case 10: return "Oktober"; break;
-        case 11: return "November"; break;
-        case 12: return "Dezember"; break;
-        default: return "-";
-    }
-}
+                    let isInList = false;
 
-/**
-* Übernimmt das angeklickte Datum in das Ausgabeelement // Events anzeigen lassen zum tag
-* @param n: Kalendertag zum Kombinieren mit Monat und Jahr
-*/
-function openDateDetails(n) {
-    var d = getDateFromMemory();
-    d.setDate(n);
-    //document.forms["myform"].elements["datum"].value = d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
-    //alert(d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear());
-
-    var calendarEntryDetailContainer = document.getElementById("calendar-entry-detail-container");
-
-    calendarEntryDetailContainer.children[0].children[0].innerHTML = ((d.getDate() < 10) ? "0" + d.getDate() : d.getDate()) + "." + 
-    ((d.getMonth() + 1 < 10) ? "0" + (d.getMonth() + 1) : d.getMonth() + 1) + "." + d.getFullYear();
-
-    if(calendarEntryDetailContainer.classList.contains("calendar-entry-detail-hidden")) calendarEntryDetailContainer.classList.remove("calendar-entry-detail-hidden");
-}
-
-function closeDateDetails() {
-
-    var calendarEntryDetailContainer = document.getElementById("calendar-entry-detail-container");
-
-    if(!calendarEntryDetailContainer.classList.contains("calendar-entry-detail-hidden")) calendarEntryDetailContainer.classList.add("calendar-entry-detail-hidden");
-}
-
-    /**
-* Ist das Angegebene Datum ein Feiertag?
-* @param m : Monat
-* @param d : Tag
-*/
-function isHoliday(m,d) {
-    //Monate fangen bei 0 an zuzählen
-    m++;
-    //festlegen der Feiertage
-    var h = new Array(7);
-    h[0] = "1.1";
-    h[1] = "6.1";
-    h[2] = "1.5";
-    h[3] = "3.10";
-    h[4] = "1.11";
-    h[5] = "25.12";
-    h[6] = "26.12";
-    h[7] = "31.12";
-    var iD;
-    //Alle Daten Testen
-    for ( var i = 0; i < h.length; i++) {
-        iH = h[i].split(".");
-        if (iH[0] == d && iH[1] == m) {
-            return true;
-        }
-    }
-    //Wenn kein Feiertag gefunden
-    return false;
-}
-
-/**
- * regelt welche Rückgabe erfolgt.
- * 0 = geklicktes Datum wird zurückgegeben.
- * 1 = Veranstaltungstext aus getEventtext() 
- * 		wird zurückgegeben.
- */
- var returnModus = 0;
-
-/**
- * Setzt die Art der Rückgabe bei, Datums-klick
- * @param returnIndex:
- * 		0 = geklicktes Datum zurückgeben
- * 		1 = event aus getEventtext()
- */
-function setReturnModus(returnIndex) {
-    returnModus = returnIndex;
-}
-
-    /**
-* Prüft ob an einem bestimmten Tag Events stattfinden und gibt diese als Element zurück.
-* @param int y: Jahr
-* @param int m: Monat
-* @param int d: tag
-* @return Element,
-*/
-function getEvents(y, m, d) {
-    //convertieren in int-Zahlen
-    y = parseInt(y);
-    m = parseInt(m);
-    d = parseInt(d);
-
-    //Monate fangen bei 0 an zuzählen
-    m++;
-
-    for(var i = 0; i < events.length; i++) {
-        
-        var date = events[i].date.split("T")[0].split("-");
-
-        var year = parseInt(date[0]);
-        var month = parseInt(date[1]);
-        var day = parseInt(date[2]);
-
-        if(year == y && month == m && day == d) {
-
-            if(events[i].eventCount > 0) {
-
-                var nodeEvents = document.createElement("div");
-                nodeEvents.classList.add("calendar-event-container");
-
-                for(var j = 0; j < events[i].eventCount; j++) {
-
-                    var element = document.createElement("div");
-                    element.classList.add("calendar-event");
+                    for(let j = 0; j < ids.length; j++) {
+                        if(ids[j].id == data.attr('oid' + i)) {
+                            isInList = true;
+                        }
+                    }
                     
-                    var text = document.createTextNode(events[i].events[j].summary);
-
-                    element.appendChild(text);
-
-                    nodeEvents.appendChild(element);
+                    if(!isInList) ids.push({id: data.attr('oid' + i), color: data.attr('eventTextColor' + i), loaded: false});
                 }
+            }
 
-                return nodeEvents;
+            let localEvents = new Map();
+
+            for(let i = 0; i < ids.length; i++) {
+
+                let isInMap = false;
+
+                //for(let k = 0; k < events.size)
+
+                ids[i].loaded = await new Promise((resolve, reject) => {
+                    vis.conn.getStates(ids[i].id + '*', function (err, states) {
+
+                        for(const state in states) {
+                            
+                            if(state.endsWith('events')) {
+
+                                const eventsObj = JSON.parse(states[state].val);
+
+                                for(let j = 0; j < eventsObj.length; j++) {
+                                    eventsObj[j].id = ids[i].id;
+                                }
+
+                                const date = states[state.replace('.events', '') + '.date'].val;
+                                const dayObj = localEvents.get(date) || {};
+
+                                dayObj.events = [
+                                    ...(dayObj.events || []),
+                                    ...eventsObj
+                                ]
+
+                                localEvents.set(date, dayObj);
+
+                            } else if(state.endsWith('color')) {
+
+                                color.set(ids[i].id, {backgroundColor: states[state].val, color: ids[i].color});
+                            }
+                        }
+
+                        resolve(true);
+                    });
+                });
+            }
+
+            events.set(data.attr('wid').toString(), localEvents);
+
+            let isNotLoaded = false;
+
+            for(let i = 0; i < ids.length; i++) {
+                if(!ids[i].loaded) {
+                    isNotLoaded = true;
+                }
+            }
+
+            if(!isNotLoaded) isLoaded = true;
+        }
+
+        function colorizeEvents(wid) {
+
+            const calendarEvents = document.getElementsByClassName(wid + '-calendar-event');
+            
+            for (let k = 0; k < calendarEvents.length; k++) {
+
+                let colors = color.get(calendarEvents[k].getAttribute('calid'));
+
+                calendarEvents[k].style.backgroundColor = colors.backgroundColor;
+                calendarEvents[k].style.color = colors.color;
+
             }
         }
-    }
 
-    return document.createTextNode("");
-}
+        async function loadCalendar(wid) {
+            //aktuelles Datum holen (1. des Monats)
+            let d = getDateFromMemory();
+            //Monat ermitteln aus this_date (zählen beginnt bei 0, daher +1)
+            let m = d.getMonth();
+            //Jahr ermitteln aus this_date (YYYY)
+            let y = d.getFullYear();
+            //Monat und Jahr eintragen
+            //document.all.calendar_month.innerHTML = getMonthname(m+1) + ' ' + y;
+            document.getElementById(wid + '-calendar-month').innerHTML = getMonthname(m + 1) + ' ' + y;
+            
+            //ersten Tag des Monats festlegen
+            let firstD = d;
+            firstD.setDate(1);
+            //Wochentag ermitteln vom 1. des übergebenen Monats (Wochentag aus firstD)
+            let dateDay = firstD.getDay(); //So = 0, Mo = 1 … Sa = 6
+            //Sonntag soll den Wert 7 darstellen -> Mo = 1 … So = 7
+            dateDay = (dateDay == 0) ? 7: dateDay;
+            //Speicher für aktuelle Zelle
+            let entry = '';
+            //Speicher für aktuellen Tag
+            let zahl = '';
+            //heutiges Datum ermitteln
+            let hD = new Date();
+        
+            //Alle Kalender Spalten durchzählen
+            for (let i = 1; i <= 42; i++) {
+        
+                //holen der aktuellen Zelle
+                entry = document.getElementById(wid + '-calendar-entry-' + i);
+                //errechnen der Tages Zahl
+                zahl = (i + 1) - dateDay;
+                //datum zusammenschreiben
+                let dx = new Date(y, m, zahl);
+                
+                //Eintragen der Daten ab ersten Tag im Monat und wenn es ein gültiges Datum ist
+                if (i >= dateDay && isValidDate(y, m, zahl)) {
+
+                    entry.innerHTML = '<div>' + zahl + '</div>';
+        
+                    if(entry.classList.contains('calendar-entry-invisible')) entry.classList.remove('calendar-entry-invisible');
+                
+                    //Listener hinzufügen
+                    entry.onclick = function(event) {
+                        openDateDetails(wid, event.currentTarget.children[0].innerHTML)
+                    };
+                
+                    //heutiges Datum hervorheben
+                    if (hD.getDate() == dx.getDate() &&
+                        hD.getMonth() == dx.getMonth() &&
+                        hD.getYear() == dx.getYear()) {
+                        if(!entry.classList.contains('calendar-entry-today')) entry.classList.add('calendar-entry-today');
+                    } else {
+                        if(entry.classList.contains('calendar-entry-today')) entry.classList.remove('calendar-entry-today');
+                    }
+        
+                    //Events hinzufügen
+                    do {
+                        if(isLoaded) {
+                            entry.appendChild(getEvents(wid, y, m, zahl));
+                        } else {
+                            await sleep(100);
+                        }
+                    
+                    } while(isLoaded == false);
+                           
+                } else {
+                    
+                    entry.innerHTML = '';
+        
+                    if(i >= dateDay) {//Wenn Kalenderende
+
+                        if(!entry.classList.contains('calendar-entry-invisible')) entry.classList.add('calendar-entry-invisible');
+                    
+                    } else {//Wenn Kalenderanfang
+                    
+                        if(!entry.classList.contains('calendar-entry-invisible')) entry.classList.add('calendar-entry-invisible');
+                    }
+                }
+            }
+            
+            //Events einfärben
+            colorizeEvents(wid);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function nextMonth(wid) {
+            let d = getDateFromMemory();
+            let m = d.getMonth() + 1;
+            let y = d.getFullYear();
+
+            //Falls Jahres wechsel
+            if((m + 1) > 12) {
+                m = 0;
+                y = y + 1;
+            }
+
+            d = new Date(y, m, 1);
+            setDateToMemory(d);
+            loadCalendar(wid);
+        }
+
+        function prevMonth(wid) {
+            let d = getDateFromMemory();
+            let m = d.getMonth()+1;
+            let y = d.getFullYear();
+
+            //Falls Jahres1wechsel
+            if((m-1) < 1) {
+                m = 11;
+                y = y - 1;
+            } else {
+                m = m - 2;
+            }
+
+            d = new Date(y, m, 1);
+            setDateToMemory(d);
+            loadCalendar(wid);
+        }
+
+        function isValidDate(y, m, d) {
+            //–Gibt Datum des letzten Tag des Monats aus–
+            let thisDate = new Date(y, m, 1);
+            //einen Tag weiter schalten
+            thisDate.setMonth(thisDate.getMonth() + 1);
+            //vom ersten Tag des nächsten monats
+            //ein Tag abziehen
+            thisDate.setTime(thisDate.getTime() - 12*3600*1000)
+    
+            if(d > thisDate.getDate()) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        function setDateToMemory(d) {
+            //document.getElementById('date_memory').innerHTML = d.getFullYear() + ',' + (d.getMonth() + 1) + ',' + d.getDate();
+            date_memory = d.getFullYear() + ',' + (d.getMonth() + 1) + ',' + d.getDate();
+        }
+
+        function getDateFromMemory() {
+            //var s = document.getElementById('date_memory').innerHTML;
+            let s = date_memory;
+            let z = s.split(',');
+            return new Date(z[0], z[1] - 1, z[2]);
+        }
+
+        function getMonthname(monthnumber) {
+            switch(monthnumber) {
+                case 1: return 'Januar';
+                case 2: return 'Februar';
+                case 3: return 'März';
+                case 4: return 'April';
+                case 5: return 'Mai';
+                case 6: return 'Juni';
+                case 7: return 'Juli';
+                case 8: return 'August';
+                case 9: return 'September';
+                case 10: return 'Oktober';
+                case 11: return 'November';
+                case 12: return 'Dezember';
+                default: return '-';
+            }
+        }
+
+        function openDateDetails(wid, n) {
+
+            let d = getDateFromMemory();
+            d.setDate(n);
+            
+            let calendarEntryDetailContainer = document.getElementById(wid + '-calendar-entry-detail-container');
+        
+            calendarEntryDetailContainer.children[0].children[0].innerHTML = ((d.getDate() < 10) ? '0' + d.getDate() : d.getDate()) + '.' + 
+            ((d.getMonth() + 1 < 10) ? '0' + (d.getMonth() + 1) : d.getMonth() + 1) + '.' + d.getFullYear();
+
+            let table = document.getElementById(wid + '-calendar-entry-detail-table');
+
+            table.innerHTML = createTableContent(wid, d.getFullYear(), d.getMonth(), d.getDate());
+            
+            if(calendarEntryDetailContainer.classList.contains('calendar-entry-detail-hidden')) calendarEntryDetailContainer.classList.remove('calendar-entry-detail-hidden');
+        }
+
+        function createTableContent(wid, y, m ,d) {
+
+            const template = 
+            '<tr>' +
+                '<td>' +
+                    '<div class="calendar-event-detail" style="background-color: ##background-color##; color: ##color##">' +
+                        '<table class="calendar-event-table-big">' +
+                            '<tr>' +
+                            '    <td rowspan="2" style="text-align: center">##time##</td>' +
+                            '    <td colspan="5">##summary##</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                            '    <td colspan="5" style="font-weight: normal">##description##</td>' +
+                            '</tr>' +
+                        '</table>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+
+            y = parseInt(y);
+            m = parseInt(m);
+            d = parseInt(d);
+        
+            //Monate fangen bei 0 an zuzählen
+            m++;
+        
+            m = (m < 10) ? '0' + m : m;
+            d = (d < 10) ? '0' + d : d;
+            
+            const map = events.get(wid);
+
+            const dayObj = map.get(y + '-' + m + '-' + d);
+            
+            let newTableContent = '';
+
+            if(dayObj) {
+                const eventObj = dayObj.events;
+    
+                if(eventObj.length > 0) {
+
+                    for(let j = 0; j < eventObj.length; j++) {
+    
+                        let newEntry = template;
+
+                        const startTime = new Date(eventObj[j].startTime);
+                        const endTime = new Date(eventObj[j].endTime);
+
+                        if(!eventObj[j].startTime.includes('T')) {
+                            startTime.setHours(0);
+                            startTime.setHours(0);
+                            startTime.setHours(0);
+                        }
+
+                        if(!eventObj[j].endTime.includes('T')) {
+                            endTime.setHours(0);
+                            endTime.setHours(0);
+                            endTime.setHours(0);
+                        }
+
+                        const startTimeText = ((startTime.getHours() < 10) ? '0' + startTime.getHours() : startTime.getHours()) + ':' + 
+                            ((startTime.getMinutes() < 10) ? '0' + startTime.getMinutes() : startTime.getMinutes());
+                        const endTimeText = ((endTime.getHours() < 10) ? '0' + endTime.getHours() : endTime.getHours()) + ':' + 
+                            ((endTime.getMinutes() < 10) ? '0' + endTime.getMinutes() : endTime.getMinutes());
+
+                        const colors = color.get(eventObj[j].id);
+
+                        newEntry = newEntry.replace('##summary##', eventObj[j].summary);
+                        newEntry = newEntry.replace('##time##', startTimeText + ' - ' + endTimeText);
+                        newEntry = newEntry.replace('##description##', (eventObj[j].description || ''));
+                        newEntry = newEntry.replace('##background-color##', colors.backgroundColor);
+                        newEntry = newEntry.replace('##color##', colors.color);
+
+                        newTableContent = newTableContent + newEntry;
+                    }
+                }            
+            }
+
+            return newTableContent;
+        }
+
+        function closeDateDetails(wid) {
+
+            let calendarEntryDetailContainer = document.getElementById(wid + '-calendar-entry-detail-container');
+            
+            if(!calendarEntryDetailContainer.classList.contains('calendar-entry-detail-hidden')) calendarEntryDetailContainer.classList.add('calendar-entry-detail-hidden');
+        }
+
+        function setReturnModus(returnIndex) {
+            returnModus = returnIndex;
+        }
+
+        function getEvents(wid, y, m, d) {
+            //convertieren in int-Zahlen
+            y = parseInt(y);
+            m = parseInt(m);
+            d = parseInt(d);
+        
+            //Monate fangen bei 0 an zuzählen
+            m++;
+        
+            m = (m < 10) ? '0' + m : m;
+            d = (d < 10) ? '0' + d : d;
+            
+            const map = events.get(wid);
+
+            const dayObj = map.get(y + '-' + m + '-' + d);
+            
+            if(dayObj) {
+                const eventObj = dayObj.events;
+    
+                if(eventObj.length > 0) {
+    
+                    const nodeEvents = document.createElement('div');
+                    nodeEvents.classList.add('calendar-event-container');
+    
+                    for(let j = 0; j < eventObj.length; j++) {
+    
+                        const element = document.createElement('div');
+                        element.classList.add('calendar-event');
+                        //element.style.backgroundColor = color.get(eventObj[j].id);
+                        //element.classList.add(eventObj[j].id + '-' + color.get(eventObj[j].id));
+                        element.classList.add(wid + "-calendar-event");
+                        element.setAttribute('calid', eventObj[j].id)
+
+                        const text = document.createTextNode(eventObj[j].summary);
+    
+                        element.appendChild(text);
+    
+                        nodeEvents.appendChild(element);
+                    }
+    
+                    return nodeEvents;
+                }            
+            }
+        
+            return document.createTextNode('');
+        }
 </script>
-
+<!--count[0]/number;-->
 <script id="tplCalendarShowInstance"
         type="text/ejs"
         class="vis-tpl"
         data-vis-prev='<img src="widgets/calendar/img/calendar.png" width="90%"></img>'
-        data-vis-attrs="oid/id;"
-        data-vis-attrs0="group.color;dayColor/color;"
+        data-vis-attrs="oid/id;eventTextColor/color;count[0]/slider,0,5,1;"
+        data-vis-attrs0="group.color;monthYearColor/color;buttonColor/color;dayColor/color;dateColor/color;dateBackgroundColor/color;popupColor/color;popupBackgroundColor/color;popupCloseColor/color;"
+        data-vis-attrs1="group.calendar/byindex;oid(1-count)/id;eventTextColor(1-count)/color;"
         data-vis-set="calendar"
         data-vis-type="calendar"
-        data-vis-name="Calendar">
+        data-vis-name="Calendar"
+        data-vis-update-style="true">
     <div class="vis-widget calendar-container <%== this.data.attr('class') %>" style="width:800px; height:600px;" id="<%= this.data.attr('wid') %>" >
         <!--<div class="<%== this.data.attr('class') %>" style="background-color: <%= this.data.attr('backgroundColor') %>;">-->
-        <table id="calendar" class="calendar">
-            <tbody class="calendar-border-color">
-                <!--<tr style="visibility:collapse;" hidden>
-                    <td colspan=7 id="date_memory">—</td>
-                </tr>-->
+        <table id="<%= this.data.attr('wid') %>-calendar" class="calendar">
+            <thead>
                 <tr class="calendar-row-small calendar-border-color">
-                    <td class="calendar-head" onclick="prevMonth()"><div>&laquo;</div></td>
-                    <td colspan=5 class="calendar-head-month" id="calendar_month">-</td>
-                    <td class="calendar-head" onclick="nextMonth()"><div>&raquo;</div></td>
+                    <th class="calendar-head" onclick="prevMonth('<%= this.data.attr('wid') %>')" style="color: <%= this.data.attr('buttonColor') %>;"><div>&laquo;</div></th>
+                    <th colspan="5" class="calendar-head-month" id="<%= this.data.attr('wid') %>-calendar-month" style="color: <%= this.data.attr('monthYearColor') %>;">-</th>
+                    <th class="calendar-head" onclick="nextMonth('<%= this.data.attr('wid') %>')" style="color: <%= this.data.attr('buttonColor') %>;"><div>&raquo;</div></th>
                 </tr>
                 <tr class="calendar-row-small calendar-border-color" style="color: <%= this.data.attr('dayColor') %>;">
-                    <td class="calendar-day">Mo</td>
-                    <td class="calendar-day">Di</td>
-                    <td class="calendar-day">Mi</td>
-                    <td class="calendar-day">Do</td>
-                    <td class="calendar-day">Fr</td>
-                    <td class="calendar-day">Sa</td>
-                    <td class="calendar-day">So</td>
+                    <th class="translate <%= this.data.attr('wid') %>-calendar-day calendar-day">Mo</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Di</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Mi</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Do</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Fr</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Sa</th>
+                    <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">So</th>
+                </tr>
+            </thead>
+            <tbody class="calendar-border-color" style="color: <%= this.data.attr('dateColor') %>; background-color: <%= this.data.attr('dateBackgroundColor') %>;">
+                <!--<tr style="visibility:collapse;" hidden>
+                    <td colspan="7" id="date_memory">—</td>
+                </tr>-->
+                <tr class="calendar-row calendar-border-color">
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-1">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-2">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-3">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-4">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-5">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-6">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-7">-x-</td>
                 </tr>
                 <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-1">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-2">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-3">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-4">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-5">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-6">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-7">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-8">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-9">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-10">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-11">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-12">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-13">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-14">-x-</td>
                 </tr>
                 <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-8">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-9">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-10">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-11">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-12">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-13">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-14">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-15">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-16">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-17">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-18">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-19">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-20">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-21">-x-</td>
                 </tr>
                 <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-15">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-16">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-17">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-18">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-19">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-20">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-21">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-22">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-23">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-24">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-25">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-26">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-27">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-28">-x-</td>
                 </tr>
                 <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-22">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-23">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-24">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-25">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-26">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-27">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-28">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-29">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-30">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-31">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-32">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-33">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-34">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-35">-x-</td>
                 </tr>
                 <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-29">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-30">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-31">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-32">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-33">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-34">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-35">-x-</td>
-                </tr>
-                <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="calendar-entry-36">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-37">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-38">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-39">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-40">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-41">-x-</td>
-                    <td class="calendar-entry" id="calendar-entry-42">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-36">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-37">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-38">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-39">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-40">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-41">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-42">-x-</td>
                 </tr>
             </tbody>
         </table>
-        <div id="calendar-entry-detail-container" class="calendar-entry-detail calendar-entry-detail-hidden">
-            <div class="calendar-entry-detail-content">
+        <div id="<%= this.data.attr('wid') %>-calendar-entry-detail-container" class="calendar-entry-detail calendar-entry-detail-hidden" style="color: <%= this.data.attr('popupColor') %>;">
+            <div class="calendar-entry-detail-content" style="background-color: <%= this.data.attr('popupBackgroundColor') %>;">
                 <h3 style="margin: 0;"></h3>
-                <span class="calendar-entry-detail-close" onclick="closeDateDetails()">CLOSE</span>
+                <table id="<%= this.data.attr('wid') %>-calendar-entry-detail-table" class="calendar-event-table">
+                </table>
+                <span class="calendar-entry-detail-close" onclick="closeDateDetails('<%= this.data.attr('wid') %>')" style="color: <%= this.data.attr('popupCloseColor') %>;">CLOSE</span>
             </div>
         </div>
     </div>
     <% var that = this; %>
-    <% /*setTimeout(function () {*/renderPage(that.data.attr('oid')); /*}, 50);*/ %>
-    <% setTimeout(function () {iniCalendar(); setReturnModus(0);}, 100); %>
+    <% renderPage(that.data.attr('oid'), data);%>
+    <% setTimeout(function () {iniCalendar(that.data.attr('wid')); setReturnModus(0);}, 100); %>    
 </script>
+
+<!--<% /*setTimeout(function () {*/renderPage(that.data.attr('oid')); /*}, 50);*/ %>
+<% setTimeout(function () {iniCalendar(that.data.attr('wid')); setReturnModus(0);}, 100); %>
+<% outputData(data);%>
+
+<% outputData(data);%>
+
+
+<% setTimeout(function () {let init = vis.binds.calendar.initCalendar(that.data);}, 100); %>-->
