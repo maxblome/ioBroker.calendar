@@ -19,6 +19,7 @@
 
     <script type="text/javascript">
         var google = [];
+        var caldav = [];
 
         // This will be called by the admin adapter when the settings page loads
         function load(settings, onChange) {
@@ -46,19 +47,37 @@
             for (var c = 0; c < settings.google.length; c++) {
                 settings.google[c].active = settings.google[c].active || false;
                 settings.google[c].name = settings.google[c].name || '';
+                settings.google[c].id = settings.google[c].id || '';
+                settings.google[c].email = settings.google[c].email || '';
                 settings.google[c].account = settings.google[c].account || '';
                 settings.google[c].accessToken = settings.google[c].accessToken || '';
                 settings.google[c].refreshToken = settings.google[c].refreshToken || '';
-                settings.google[c].id = settings.google[c].id || '';
-                settings.google[c].email = settings.google[c].email || '';
+                settings.google[c].ctag = settings.google[c].ctag || '';
+                settings.google[c].days = settings.google[c].days || 7;
                 settings.google[c].color = settings.google[c].color || '#000000';
             }
 
+            for (var c = 0; c < settings.caldav.length; c++) {
+                settings.caldav[c].active = settings.caldav[c].active || false;
+                settings.caldav[c].name = settings.caldav[c].name || '';
+                settings.caldav[c].id = settings.caldav[c].id || '';
+                settings.caldav[c].hostname = settings.caldav[c].hostname || '';
+                settings.caldav[c].username = settings.caldav[c].username || '';
+                settings.caldav[c].password = settings.caldav[c].password || '';
+                settings.caldav[c].ctag = settings.caldav[c].ctag || '';
+                settings.caldav[c].path = settings.caldav[c].path || '';
+                settings.caldav[c].days = settings.caldav[c].days || 7;
+                settings.caldav[c].color = settings.caldav[c].color || '#000000';
+                settings.caldav[c].listIsLoaded = settings.caldav[c].listIsLoaded || false;
+            }
+
             google = settings.google || [];
+            caldav = settings.caldav || [];
 
             onChange(false);
 
             values2table('google', google, onChange);
+            values2table('caldav', caldav, onChange);
             
             // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
             if (M) M.updateTextFields();
@@ -78,16 +97,25 @@
             });
 
             obj.google = table2values('google');
+            obj.caldav = table2values('caldav');
 
             callback(obj);
         }
     </script>
     <style>
-        td:nth-of-type(3), /* ID */
-        td:nth-of-type(4), /* E-Mail */
-        td:nth-of-type(5), /* Account */
-        td:nth-of-type(6), /* Access Token */
-        td:nth-of-type(7) { /* Refresh Token */
+        #google-values td:nth-of-type(3), /* ID */
+        #google-values td:nth-of-type(4), /* E-Mail */
+        #google-values td:nth-of-type(5), /* Account */
+        #google-values td:nth-of-type(6), /* Access Token */
+        #google-values td:nth-of-type(7), /* Refresh Token */
+        #google-values td:nth-of-type(8) { /* Ctag */
+            display: none;
+        }
+
+        #caldav-values td:nth-of-type(3), /* ID */
+        #caldav-values td:nth-of-type(7), /* ctag */
+        #caldav-values td:nth-of-type(8), /* Path */
+        #caldav-values td:nth-of-type(9) { /* listIsLoaded */
             display: none;
         }
     </style>
@@ -100,6 +128,7 @@
                 <ul class="tabs">
                     <li class="tab col s2"><a href="#tab-main" class="translate active">Main</a></li>
                     <li class="tab col s2"><a href="#tab-google" class="translate">Google</a></li>
+                    <li class="tab col s2"><a href="#tab-caldav" class="translate">CalDav</a></li>
                     <!--<li class="tab col s2"><a href="#tab-microsoft" class="translate">Microsoft</a></li>-->
                 </ul>
             </div>
@@ -128,7 +157,7 @@
                 <div class="row">
                     <div class="col s12 m12">
                         <input class="value" id="googleActive" type="checkbox"/>
-                        <span class="translate" for="googleActive">Activate Google calendar</span>
+                        <span class="translate" for="googleActive">Activate Google</span>
                     </div>
                 </div>
                 <div class="row">
@@ -154,8 +183,42 @@
                                     <th data-name="account" style="display: none">account</th>
                                     <th data-name="accessToken" style="display: none">accessToken</th>
                                     <th data-name="refreshToken" style="display: none">refreshToken</th>
+                                    <th data-name="ctag" style="display: none">ctag</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <!--<th data-name="color" data-type="color" class="translate">color</th> comming soon-->
+                                    <th data-name="color" data-type="color" class="translate">color</th>
+                                    <th data-buttons="delete up down"></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-caldav" class="col s12 page">
+                <div class="row">
+                </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        <input class="value" id="caldavActive" type="checkbox"/>
+                        <span class="translate" for="caldavActive">Activate CalDAV</span>
+                    </div>
+                </div>
+                <div class="col s12 m12" id="caldav">
+                    <a class="btn-floating waves-effect waves-light blue table-button-add"><i class="material-icons">add</i></a>
+                    <div class="table-values-div">
+                        <table id="caldav-values" class="table-values">
+                            <thead>
+                                <tr>
+                                    <th data-name="active" class="translate" data-type="checkbox">active</th>
+                                    <th data-name="name" class="translate">name</th>
+                                    <th data-name="id" style="display: none">id</th>
+                                    <th data-name="hostname" class="translate">hostname</th>
+                                    <th data-name="username" class="translate">username</th>
+                                    <th data-name="password" data-type="password" class="translate">password</th>
+                                    <th data-name="ctag" style="display: none">ctag</th>
+                                    <th data-name="path" style="display: none">path</th>
+                                    <th data-name="listIsLoaded" style="display: none" data-type="checkbox">listIsLoaded</th>
+                                    <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <th data-name="color" data-type="color" class="translate">color</th>
                                     <th data-buttons="delete up down"></th>
                                 </tr>
