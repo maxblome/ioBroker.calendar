@@ -1,7 +1,7 @@
 {
   "name": "iobroker.calendar",
-  "version": "0.2.0",
-  "description": "Connect to google calendar",
+  "version": "1.0.0",
+  "description": "Connect to google and caldav calendar",
   "author": {
     "name": "WLAN-Kabel",
     "email": "wlan-kabel@outlook.de"
