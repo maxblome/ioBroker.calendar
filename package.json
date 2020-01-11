@@ -1,6 +1,6 @@
 {
   "name": "iobroker.calendar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Connect to google and caldav calendar",
   "author": {
     "name": "WLAN-Kabel",
@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "googleapis": "^46.0.0",
     "node-cron": "^2.0.3",
+    "request": "^2.88.0",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {

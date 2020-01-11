@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
+            "1.0.1": {
+                "en": "Missing dependency added",
+                "de": "Fehlende Abhängigkeit hinzugefügt",
+                "ru": "Добавлена недостающая зависимость",
+                "pt": "Dependência ausente adicionada",
+                "nl": "Ontbrekende afhankelijkheid toegevoegd",
+                "fr": "Dépendance manquante ajoutée",
+                "it": "Aggiunta dipendenza mancante",
+                "es": "Falta dependencia agregada",
+                "pl": "Dodano brakującą zależność",
+                "zh-cn": "缺少依赖项添加"
+            },
             "1.0.0": {
                 "en": "Added caldav support\nMultiple calendars can be displayed in one widget\nAdded more widget settings\nState structure changed\nAppointments are now shown in the popup\nSome internal functions revised\nFixed an error when saving the authentication data",
                 "de": "Caldav-Unterstützung hinzugefügt\nIn einem Widget können mehrere Kalender angezeigt werden\nWeitere Widget-Einstellungen hinzugefügt\nStatestruktur geändert\nTermine werden jetzt im Popup angezeigt\nEinige interne Funktionen überarbeitet\nFehler beim Speichern der Authentifizierungsdaten behoben",

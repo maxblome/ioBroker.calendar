@@ -61,6 +61,9 @@ Enter your access data and the host name in the config.
 
 ## Changelog
 
+### 1.0.1 (2020-01-11)
+* (WLAN-Kabel) Missing dependency added
+
 ### 1.0.0 (2020-01-11)
 * (WLAN-Kabel) Added caldav support
 * (WLAN-Kabel) Multiple calendars can be displayed in one widget
