@@ -31,3 +31,7 @@ maintenance/**
 
 www_old/
 tsconfig.json
+
+main.test.js
+admin/admin.d.ts
+.github
