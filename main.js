@@ -14,7 +14,7 @@ const http = require('http');
 const cron = require('node-cron');
 const {google} = require('googleapis');
 const ical = require('./lib/ical');
-const nextcloud = require('./lib/nextcloud');
+const caldav = require('./lib/caldav');
 const util = require('./lib/utils');
 
 let cronJob;
@@ -280,7 +280,7 @@ async function getCaldavCalendarIds(calendar) {
     let calendarIds;
 
     try {
-        calendarIds = await nextcloud.queryCalendarList(calendar.hostname, calendar.username, calendar.password);
+        calendarIds = await caldav.queryCalendarList(calendar.hostname, calendar.username, calendar.password);
     } catch(err) {
         adapter.log.error(err);
     }
@@ -480,7 +480,7 @@ async function getCaldavCalendarEvents(calendar) {
 
         try {
 
-            events = await nextcloud.queryEvents(calendar.hostname, calendar.path, calendar.username, calendar.password);
+            events = await caldav.queryEvents(calendar.hostname, calendar.path, calendar.username, calendar.password);
 
         } catch(err) {
             adapter.log.error(err);
