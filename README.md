@@ -53,13 +53,23 @@ Create the client id and copy the displayed client ID and the client secret.
 
 Go to the adapter config an add the client ID and the client secret.
 
-## Caldav Calendar (Tested with Nextcloud)
+## Caldav Calendar (Tested with Nextcloud, Web.de and Mail.de)
 
-You can add yout caldav calendar in the adapter config.
+You can add your caldav calendar in the adapter config.
 
 Enter your access data and the host name in the config.
 
+## iCal File Calendar
+
+You can add your ical calendar in the adapter config.
+
+Enter the file path on the CalDav tab in the hostname field.
+
 ## Changelog
+
+### 1.1.0 (2020-02-05)
+* (WLAN-Kabel) Caldav support expanded
+* (WLAN-Kabel) iCal file support added
 
 ### 1.0.1 (2020-01-11)
 * (WLAN-Kabel) Missing dependency added

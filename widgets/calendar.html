@@ -560,8 +560,8 @@
         data-vis-update-style="true">
     <div class="vis-widget calendar-container <%== this.data.attr('class') %>" style="width:800px; height:600px;" id="<%= this.data.attr('wid') %>" >
         <!--<div class="<%== this.data.attr('class') %>" style="background-color: <%= this.data.attr('backgroundColor') %>;">-->
-        <table id="<%= this.data.attr('wid') %>-calendar" class="calendar">
-            <thead>
+        <table id="<%= this.data.attr('wid') %>-calendar" class="calendar" data-rrr="<%== this.data.attr('buttonColor') %>">
+            <tbody class="calendar-border-color">
                 <tr class="calendar-row-small calendar-border-color">
                     <th class="calendar-head" onclick="prevMonth('<%= this.data.attr('wid') %>')" style="color: <%= this.data.attr('buttonColor') %>;"><div>&laquo;</div></th>
                     <th colspan="5" class="calendar-head-month" id="<%= this.data.attr('wid') %>-calendar-month" style="color: <%= this.data.attr('monthYearColor') %>;">-</th>
@@ -576,21 +576,16 @@
                     <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">Sa</th>
                     <th class="<%= this.data.attr('wid') %>-calendar-day calendar-day">So</th>
                 </tr>
-            </thead>
-            <tbody class="calendar-border-color" style="color: <%= this.data.attr('dateColor') %>; background-color: <%= this.data.attr('dateBackgroundColor') %>;">
-                <!--<tr style="visibility:collapse;" hidden>
-                    <td colspan="7" id="date_memory">—</td>
-                </tr>-->
-                <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-1">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-2">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-3">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-4">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-5">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-6">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-7">-x-</td>
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>;">
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-1" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-2" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-3" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-4" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-5" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-6" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-7" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
                 </tr>
-                <tr class="calendar-row calendar-border-color">
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>; background-color: <%= this.data.attr('dateBackgroundColor') %>;">
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-8">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-9">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-10">-x-</td>
@@ -599,7 +594,7 @@
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-13">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-14">-x-</td>
                 </tr>
-                <tr class="calendar-row calendar-border-color">
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>; background-color: <%= this.data.attr('dateBackgroundColor') %>;">
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-15">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-16">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-17">-x-</td>
@@ -608,7 +603,7 @@
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-20">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-21">-x-</td>
                 </tr>
-                <tr class="calendar-row calendar-border-color">
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>; background-color: <%= this.data.attr('dateBackgroundColor') %>;">
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-22">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-23">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-24">-x-</td>
@@ -617,23 +612,23 @@
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-27">-x-</td>
                     <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-28">-x-</td>
                 </tr>
-                <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-29">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-30">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-31">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-32">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-33">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-34">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-35">-x-</td>
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>;">
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-29" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-30" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-31" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-32" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-33" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-34" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-35" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
                 </tr>
-                <tr class="calendar-row calendar-border-color">
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-36">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-37">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-38">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-39">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-40">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-41">-x-</td>
-                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-42">-x-</td>
+                <tr class="calendar-row calendar-border-color" style="color: <%= this.data.attr('dateColor') %>;">
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-36" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-37" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-38" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-39" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-40" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-41" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
+                    <td class="calendar-entry" id="<%= this.data.attr('wid') %>-calendar-entry-42" style="background-color: <%= this.data.attr('dateBackgroundColor') %>;">-x-</td>
                 </tr>
             </tbody>
         </table>

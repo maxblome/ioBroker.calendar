@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "Caldav support expanded\niCal file support added",
+                "de": "Die Unterstützung von Caldav wurde erweitert\nUnterstützung für iCal-Dateien hinzugefügt",
+                "ru": "Поддержка Caldav расширена\nдобавлена поддержка файлов iCal",
+                "pt": "Suporte Caldav expandido\nSuporte ao arquivo iCal adicionado",
+                "nl": "Caldav-ondersteuning uitgebreid\nOndersteuning voor iCal-bestanden toegevoegd",
+                "fr": "Prise en charge de Caldav étendue\nAjout de la prise en charge des fichiers iCal",
+                "it": "Supporto Caldav ampliato\nAggiunto supporto file iCal",
+                "es": "Soporte Caldav expandido\nSoporte de archivos iCal agregado",
+                "pl": "Obsługa Caldav została rozszerzona\nDodano obsługę plików iCal",
+                "zh-cn": "卡尔达夫支持扩大\n添加了iCal文件支持"
+            },
             "1.0.1": {
                 "en": "Missing dependency added",
                 "de": "Fehlende Abhängigkeit hinzugefügt",
@@ -114,6 +126,8 @@
         "type": "date-and-time",
         "compact": true,
         "materialize": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
         "dependencies": [
             {
                 "js-controller": ">=1.4.2"
