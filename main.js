@@ -67,7 +67,7 @@ class Calendar extends utils.Adapter {
 
             const calendar = adapter.config.caldav[i];
 
-            if(calendar.active && !calendar.listIsLoaded) {
+            if(calendar.active && !calendar.listIsLoaded && calendar.hostname.startsWith('http')) {
 
                 let ids;
 
@@ -82,6 +82,22 @@ class Calendar extends utils.Adapter {
                         caldav: handleCaldavCalendarIds(adapter.config, i, ids)
                     });
                 }
+            } else if(calendar.active && !calendar.listIsLoaded && !calendar.hostname.startsWith('http')) {
+            
+                let id = new Buffer((calendar.hostname || '')).toString('base64').replace(/[+/= ]/g, '');
+                id = id.substring(id.length - 31, id.length - 1);
+    
+                adapter.config.caldav[i].active = true;
+                adapter.config.caldav[i].path = '';
+                adapter.config.caldav[i].name = calendar.name;
+                adapter.config.caldav[i].id =  id;
+                adapter.config.caldav[i].ctag = calendar.ctag || '';
+                adapter.config.caldav[i].color = calendar.color|| '#000000';
+                adapter.config.caldav[i].listIsLoaded = true;
+
+                updateConfig({
+                    caldav: adapter.config.caldav
+                });
             }
         }
 
@@ -96,14 +112,12 @@ class Calendar extends utils.Adapter {
 
             const calendar = calendars[i];
             
-            if(adapter.config.caldavActive && calendar.active && calendar.username != '' && calendar.hostname != '' && calendar.password != '' && calendar.id != '') {
+            if((adapter.config.caldavActive && calendar.active && calendar.username != '' && calendar.hostname != '' && calendar.password != ''
+                && calendar.id != '' && calendar.path != '' && (calendar.hostname) ? calendar.hostname.startsWith('http') : false) ||
+                (adapter.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && (calendar.hostname) ? !calendar.hostname.startsWith('http') : false) ||
+                (adapter.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '')) {
                 addDevice(calendar.id, calendar.name);
                 addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
-                addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
-                addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
-            } else if(adapter.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '') {
-                addDevice(calendar.id, calendar.name);
-                addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.account);
                 addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
                 addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
             } else {
@@ -225,8 +239,8 @@ async function startCalendarSchedule(config, auth = null) {
                 const events = await getGoogleCalendarEvents(googleCalendars[i], auth, i);
                 
                 handleCalendarEvents(googleCalendars[i], events);
-            } catch(err) {
-                adapter.log.error(err);
+            } catch(error) {
+                adapter.log.error(error);
             }
         }
     }
@@ -238,8 +252,8 @@ async function startCalendarSchedule(config, auth = null) {
                 const events = await getCaldavCalendarEvents(caldavCalendars[i]);
                 
                 handleCalendarEvents(caldavCalendars[i], events);
-            } catch(err) {
-                adapter.log.error(err);
+            } catch(error) {
+                adapter.log.error(error);
             }
         }
     }
@@ -408,7 +422,7 @@ function removeDevice(id) {
 
     adapter.getStates(id + '*', (err, states) => {
         if(!err) {
-            for (let id in states) {
+            for (const id in states) {
                 adapter.log.debug(`Delete state => ${id}`);
                 adapter.delObject(id);
             }
@@ -417,7 +431,7 @@ function removeDevice(id) {
 
     adapter.getChannels(id, (err, states) => {
         if(!err) {
-            for (let id in states) {
+            for(const id in states) {
                 adapter.log.debug(`Delete channel => ${states[id]._id}`);
                 adapter.delObject(states[id]._id);
             }
@@ -460,7 +474,7 @@ function removeDeleted(oldList, newList, calendarId) {
             
             let event = false;
 
-            for(let j of newList.keys()) {
+            for(const j of newList.keys()) {
 
                 if(oldList[i]._id.split('.')[3] == j) {
 
@@ -477,7 +491,7 @@ function removeDeleted(oldList, newList, calendarId) {
                 adapter.log.debug(`Delete channel => ${oldList[i]._id}`);
                 adapter.delObject(oldList[i]._id);
                 adapter.getStates(oldList[i]._id + '*', (err, states) => {
-                    for (let id in states) {
+                    for (const id in states) {
                         adapter.log.debug(`Delete state => ${id}`);
                         adapter.delObject(id);
                     }
@@ -489,31 +503,55 @@ function removeDeleted(oldList, newList, calendarId) {
 
 async function getCaldavCalendarEvents(calendar) {
 
-    if(adapter.config.caldavActive && calendar.active && calendar.username != '' &&
-        calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '') {
+    let events;
+    const list = [];
 
-        let events;
-        const list = [];
+    if(adapter.config.caldavActive && calendar.active && calendar.username != '' &&
+        calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '' && calendar.hostname.startsWith('http')) {
 
         try {
 
             events = await caldav.queryEvents(calendar.path, calendar.username, calendar.password);
 
-        } catch(err) {
-            adapter.log.error(err);
+        } catch(error) {
+            adapter.log.error(error);
         }
 
         for(let i = 0; i < events.length; i++) {
-
-            const calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
             
-            list.push(util.normalizeEvent(calendar.events[0].summary, calendar.events[0].description, calendar.events[0].dtstart.val, calendar.events[0].dtend.val));
+            let calendar;
+
+            if(Object.keys(events[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
+                calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
+            } else {
+                calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+            }
+            
+            for(let i = 0; i < calendar.events.length; i++) {
+                list.push(util.normalizeEvent(calendar.events[i].summary, calendar.events[i].description, calendar.events[i].dtstart.val, calendar.events[i].dtend.val));
+            }
         }
 
         adapter.log.info(`Updated calendar "${calendar.name}"`);
+    } else if(adapter.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && !calendar.hostname.startsWith('http')) {
 
-        return list;
+        try {
+            events = await ical.readFile(calendar.hostname);
+
+            const parsedEvents = ical.parse(events);
+
+            for(let i = 0; i < parsedEvents.events.length; i++) {
+                list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
+                    parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
+            }
+        } catch(error) {
+            adapter.log.error(error);
+        }
+
+        adapter.log.info(`Updated calendar "${calendar.name}"`);
     }
+
+    return list;
 }
 
 async function getGoogleCalendarEvents(calendar, auth, index) {
