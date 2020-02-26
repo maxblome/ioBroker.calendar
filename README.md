@@ -14,7 +14,7 @@
 
 ## Calendar adapter for ioBroker
 
-Read your google or caldav calendar.
+Read your google, caldav or ical calendar.
 
 ## Todo
 * Add Outlook calendar
@@ -59,6 +59,14 @@ You can add your caldav calendar in the adapter config.
 
 Enter your access data and the host name in the config.
 
+### Baseurl list
+* Nextcloud: https://<Hostname>/remote.php/dav/principals
+* Web.de: https://caldav.web.de
+* mail.de: https://kalender.mail.de
+* Posteo: https://posteo.de:8443
+
+If you know more, please let me know so that I can include them.
+
 ## iCal File Calendar
 
 You can add your ical calendar in the adapter config.
@@ -66,6 +74,11 @@ You can add your ical calendar in the adapter config.
 Enter the file path on the CalDav tab in the hostname field.
 
 ## Changelog
+
+### 1.1.1 (2020-02-26)
+* (WLAN-Kabel) Password encryption added
+* (WLAN-Kabel) Error messages for caldav lib extended
+* (WLAN-Kabel) Fixed an issue that caused errors when reading null events
 
 ### 1.1.0 (2020-02-05)
 * (WLAN-Kabel) Caldav support expanded

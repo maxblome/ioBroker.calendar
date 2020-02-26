@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "news": {
+            "1.1.1": {
+                "en": "Password encryption added\nError messages for caldav lib extended\nFixed an issue that caused errors when reading null events",
+                "de": "Passwortverschlüsselung hinzugefügt\nFehlermeldungen für caldav lib erweitert\nEs wurde ein Problem behoben, das beim Lesen von Nullereignissen zu Fehlern führte",
+                "ru": "Добавлено шифрование пароля\nРасширено сообщение об ошибке для Caldav lib\nИсправлена ошибка, приводившая к ошибкам при чтении нулевых событий.",
+                "pt": "Criptografia de senha adicionada\nMensagens de erro para a caldav lib estendida\nCorrigido um problema que causava erros ao ler eventos nulos",
+                "nl": "Wachtwoordcodering toegevoegd\nFoutmeldingen voor caldav lib uitgebreid\nEen probleem opgelost dat fouten veroorzaakte bij het lezen van null-gebeurtenissen",
+                "fr": "Cryptage du mot de passe ajouté\nMessages d'erreur pour la bibliothèque caldav étendue\nCorrection d'un problème qui provoquait des erreurs lors de la lecture d'événements nuls",
+                "it": "Crittografia password aggiunta\nMessaggi di errore per caldav lib estesi\nRisolto il problema che causava errori durante la lettura di eventi null",
+                "es": "Cifrado de contraseña agregado\nMensajes de error para caldav lib extendidos\nSe solucionó un problema que causaba errores al leer eventos nulos",
+                "pl": "Dodano szyfrowanie hasłem\nRozszerzone komunikaty o błędach dla caldav lib\nNaprawiono błąd, który powodował błędy podczas odczytywania zdarzeń zerowych",
+                "zh-cn": "添加了密码加密\nCaldav lib扩展的错误消息\n修复了读取空事件时导致错误的问题"
+            },
             "1.1.0": {
                 "en": "Caldav support expanded\niCal file support added",
                 "de": "Die Unterstützung von Caldav wurde erweitert\nUnterstützung für iCal-Dateien hinzugefügt",
