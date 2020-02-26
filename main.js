@@ -36,9 +36,6 @@ class Calendar extends utils.Adapter {
             name: 'calendar',
         });
         this.on('ready', this.onReady.bind(this));
-        this.on('objectChange', this.onObjectChange.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
 
@@ -62,9 +59,23 @@ class Calendar extends utils.Adapter {
         if(hasCalendarWithoutGrantPermission(adapter.config)) {
             server = initServer(adapter.config);
         }
-        
+
+        let systemConfig;
+
+        try {
+            systemConfig = await adapter.getForeignObjectAsync('system.config');
+        } catch(error) {
+            adapter.log.error(error);
+        }
+
         for(let i = 0; i < adapter.config.caldav.length; i++) {
 
+            if(systemConfig && systemConfig.native && systemConfig.native.secret) {
+                adapter.config.caldav[i].password = decrypt(systemConfig.native.secret, adapter.config.caldav[i].password);
+            } else {
+                adapter.config.caldav[i].password = decrypt('Zgfr56gFe87jJOM', adapter.config.caldav[i].password);
+            }
+            
             const calendar = adapter.config.caldav[i];
 
             if(calendar.active && !calendar.listIsLoaded && calendar.hostname.startsWith('http')) {
@@ -84,7 +95,7 @@ class Calendar extends utils.Adapter {
                 }
             } else if(calendar.active && !calendar.listIsLoaded && !calendar.hostname.startsWith('http')) {
             
-                let id = new Buffer((calendar.hostname || '')).toString('base64').replace(/[+/= ]/g, '');
+                let id = Buffer.from((calendar.hostname || '')).toString('base64').replace(/[+/= ]/g, '');
                 id = id.substring(id.length - 31, id.length - 1);
     
                 adapter.config.caldav[i].active = true;
@@ -134,9 +145,6 @@ class Calendar extends utils.Adapter {
         } else if(this.config.caldavActive) {
             startCalendarSchedule(adapter.config);
         }
-
-        // in this template all states changes inside the adapters namespace are subscribed
-        this.subscribeStates('*');
     }
 
     /**
@@ -145,8 +153,6 @@ class Calendar extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            //this.log.info('cleaned everything up...');
-
             if(cronJob) {
                 cronJob.stop();
                 adapter.log.debug('Cron job stopped');
@@ -162,36 +168,14 @@ class Calendar extends utils.Adapter {
             callback();
         }
     }
+}
 
-    /**
-     * Is called if a subscribed object changes
-     * @param {string} id
-     * @param {ioBroker.Object | null | undefined} obj
-     */
-    onObjectChange(id, obj) {
-        if (obj) {
-            // The object was changed
-            // this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-        } else {
-            // The object was deleted
-            // this.log.info(`object ${id} deleted`);
-        }
+function decrypt(key, value) {
+    let result = '';
+    for(let i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
     }
-
-    /**
-     * Is called if a subscribed state changes
-     * @param {string} id
-     * @param {ioBroker.State | null | undefined} state
-     */
-    onStateChange(id, state) {
-        if (state) {
-            // The state was changed
-            // this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        } else {
-            // The state was deleted
-            // this.log.info(`state ${id} deleted`);
-        }
-    }
+    return result;
 }
 
 function getDatetime(add = 0, hours = 0, mins = 0, secs = 0, millisecs = 0) {
@@ -333,7 +317,7 @@ function handleCaldavCalendarIds(config, index, ids) {
 
         if(!firstIsSet) {
             
-            let id = new Buffer((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
+            let id = Buffer.from((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
             id = id.substring(id.length - 31, id.length - 1);
             
             adapter.log.info(`Set calendar name "${index}": Old name => "${configCaldav[index].name}" New name "${calendar.name}"`);
@@ -354,7 +338,7 @@ function handleCaldavCalendarIds(config, index, ids) {
             adapter.log.info(`Found calendar in account "${configCaldav[index].username}": Calendar "${calendar.name}"`);
             adapter.log.info(`The calendar "${calendar.name}" was added. You can activate the calendar in the config.`);
             
-            let id = new Buffer((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
+            let id = Buffer.from((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
             id = id.substring(id.length - 31, id.length - 1);
 
             configCalendar.active = false;
@@ -508,13 +492,14 @@ async function getCaldavCalendarEvents(calendar) {
 
     if(adapter.config.caldavActive && calendar.active && calendar.username != '' &&
         calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '' && calendar.hostname.startsWith('http')) {
-
+        
         try {
-
+            adapter.log.debug(`Read events of '${calendar.name}'`);
             events = await caldav.queryEvents(calendar.path, calendar.username, calendar.password);
 
         } catch(error) {
             adapter.log.error(error);
+            return;
         }
 
         for(let i = 0; i < events.length; i++) {
@@ -536,6 +521,7 @@ async function getCaldavCalendarEvents(calendar) {
     } else if(adapter.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && !calendar.hostname.startsWith('http')) {
 
         try {
+            adapter.log.debug(`Read events of '${calendar.name}'`);
             events = await ical.readFile(calendar.hostname);
 
             const parsedEvents = ical.parse(events);
@@ -744,7 +730,7 @@ async function getGoogleCalendarIds(auth) {
                         }
 
                         calendar.email = items[i].id;
-                        calendar.id = new Buffer((items[i].id || '')).toString('base64').replace(/[+/= ]/g, '').substring(0, 30);
+                        calendar.id = Buffer.from((items[i].id || '')).toString('base64').replace(/[+/= ]/g, '').substring(0, 30);
                         calendar.summary = items[i].summaryOverride || items[i].summary;
                         calendar.color = items[i].backgroundColor || '#000000';
 
