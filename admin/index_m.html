@@ -21,8 +21,36 @@
         var google = [];
         var caldav = [];
 
-        // This will be called by the admin adapter when the settings page loads
+        var secret;
+
+        function encrypt(key, value) {
+            var result = '';
+            for(var i = 0; i < value.length; ++i) {
+                result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+            }
+            return result;
+        }
+
+        function decrypt(key, value) {
+            var result = '';
+            for(var i = 0; i < value.length; ++i) {
+                result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+            }
+            return result;
+        }
+
+        // the function loadSettings has to exist ...
         function load(settings, onChange) {
+            socket.emit('getObject', 'system.config', function (err, obj) {
+                secret = (obj.native ? obj.native.secret : '') || 'Zgfr56gFe87jJOM';
+                loadHelper(settings, onChange);
+            });
+
+            onChange(false);
+        }
+
+        // This will be called by the admin adapter when the settings page loads
+        function loadHelper(settings, onChange) {
             // example: select elements with id=key and class=value and insert value
             if (!settings) return;
             $('.value').each(function () {
@@ -63,7 +91,7 @@
                 settings.caldav[c].id = settings.caldav[c].id || '';
                 settings.caldav[c].hostname = settings.caldav[c].hostname || '';
                 settings.caldav[c].username = settings.caldav[c].username || '';
-                settings.caldav[c].password = settings.caldav[c].password || '';
+                settings.caldav[c].password = decrypt(secret, settings.caldav[c].password) || '';
                 settings.caldav[c].ctag = settings.caldav[c].ctag || '';
                 settings.caldav[c].path = settings.caldav[c].path || '';
                 settings.caldav[c].days = settings.caldav[c].days || 7;
@@ -98,6 +126,10 @@
 
             obj.google = table2values('google');
             obj.caldav = table2values('caldav');
+
+            for (var c = 0; c < obj.caldav.length; c++) {
+                obj.caldav[c].password = encrypt(secret, obj.caldav[c].password);
+            }
 
             callback(obj);
         }
