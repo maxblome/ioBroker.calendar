@@ -3,8 +3,8 @@
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
-![Number of Installations (latest)](http://iobroker.live/badges/calendar-installed.svg)
-![Number of Installations (stable)](http://iobroker.live/badges/calendar-stable.svg)
+[![Installations](http://iobroker.live/badges/calendar-installed.svg)](http://iobroker.live/badges/calendar-installed.svg)
+[![Stable](http://iobroker.live/badges/calendar-stable.svg)](http://iobroker.live/badges/calendar-stable.svg)
 [![Dependency Status](https://img.shields.io/david/WLAN-Kabel/ioBroker.calendar.svg)](https://david-dm.org/WLAN-Kabel/iobroker.calendar)
 [![Known Vulnerabilities](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar/badge.svg)](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar)
 
