@@ -21,6 +21,7 @@ let cronJob;
 let server;
 
 let adapter;
+let systemConfig;
 
 let oauth2;
 const googleScope = 'https://www.googleapis.com/auth/calendar';
@@ -60,8 +61,6 @@ class Calendar extends utils.Adapter {
             server = initServer(adapter.config);
         }
 
-        let systemConfig;
-
         try {
             systemConfig = await adapter.getForeignObjectAsync('system.config');
         } catch(error) {
@@ -69,6 +68,8 @@ class Calendar extends utils.Adapter {
         }
 
         for(let i = 0; i < adapter.config.caldav.length; i++) {
+
+            adapter.log.info('KENNWORT: ' + adapter.config.caldav[i].name + ' ' + adapter.config.caldav[i].password);
 
             if(systemConfig && systemConfig.native && systemConfig.native.secret) {
                 adapter.config.caldav[i].password = decrypt(systemConfig.native.secret, adapter.config.caldav[i].password);
@@ -170,6 +171,14 @@ class Calendar extends utils.Adapter {
     }
 }
 
+function encrypt(key, value) {
+    let result = '';
+    for(let i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+    }
+    return result;
+}
+
 function decrypt(key, value) {
     let result = '';
     for(let i = 0; i < value.length; ++i) {
@@ -201,10 +210,16 @@ function getDatetime(add = 0, hours = 0, mins = 0, secs = 0, millisecs = 0) {
 
 async function updateConfig(newConfig) {
     // Create the config object
+
+    adapter.log.info(JSON.stringify(newConfig));
+
     const config = {
         ...adapter.config,
         ...newConfig,
     };
+
+    adapter.log.info(JSON.stringify(config));
+
     // Update the adapter object
     const adapterObj = await adapter.getForeignObjectAsync(`system.adapter.${adapter.namespace}`);
     adapterObj.native = config;
@@ -321,7 +336,7 @@ function handleCaldavCalendarIds(config, index, ids) {
             id = id.substring(id.length - 31, id.length - 1);
             
             adapter.log.info(`Set calendar name "${index}": Old name => "${configCaldav[index].name}" New name "${calendar.name}"`);
-
+            
             configCaldav[index].active = true;
             configCaldav[index].path = calendar.path;
             configCaldav[index].name = calendar.name;
@@ -329,8 +344,10 @@ function handleCaldavCalendarIds(config, index, ids) {
             configCaldav[index].ctag = calendar.ctag || '';
             configCaldav[index].color = calendar.color|| '#000000';
             configCaldav[index].listIsLoaded = true;
+            configCaldav[index].password = encrypt(systemConfig.native.secret, configCaldav[index].password);
 
             firstIsSet = true;
+            
         } else {
 
             const configCalendar = {};
@@ -352,11 +369,13 @@ function handleCaldavCalendarIds(config, index, ids) {
             configCalendar.color = calendar.color || '#000000';
             configCalendar.path = calendar.path;
             configCalendar.listIsLoaded = true;
-    
+            
             configCaldav.push(configCalendar);
         }
+
+        
     }
-    
+
     return configCaldav;
 }
 
