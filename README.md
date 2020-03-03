@@ -1,16 +1,17 @@
+
 ![Logo](admin/calendar.png)
 # ioBroker.calendar
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.calendar.svg)](https://www.npmjs.com/package/iobroker.calendar)
-![Number of Installations (latest)](http://iobroker.live/badges/calendar-installed.svg)
-![Number of Installations (stable)](http://iobroker.live/badges/calendar-stable.svg)
+[![NPM version](http://img.shields.io/npm/v/iobroker.calendar.svg?logo=npm)](https://www.npmjs.com/package/iobroker.calendar)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.calendar?logo=npm)](https://www.npmjs.com/package/iobroker.calendar)
+![Installations](http://iobroker.live/badges/calendar-installed.svg)
+![Stable](http://iobroker.live/badges/calendar-stable.svg)
 [![Dependency Status](https://img.shields.io/david/WLAN-Kabel/ioBroker.calendar.svg)](https://david-dm.org/WLAN-Kabel/iobroker.calendar)
 [![Known Vulnerabilities](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar/badge.svg)](https://snyk.io/test/github/WLAN-Kabel/ioBroker.calendar)
 
 [![NPM](https://nodei.co/npm/iobroker.calendar.png?downloads=true)](https://nodei.co/npm/iobroker.calendar/)
 
-**Tests:** [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar) [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/WLAN-Kabel/ioBroker.calendar?branch=master&svg=true)](https://ci.appveyor.com/project/WLANKabel/ioBroker-calendar/)
+**Tests:** [![Travis-CI](http://img.shields.io/travis/WLAN-Kabel/ioBroker.calendar/master.svg?logo=travis)](https://travis-ci.org/WLAN-Kabel/ioBroker.calendar) [![AppVeyor](https://img.shields.io/appveyor/build/WLANKabel/ioBroker-calendar/master?logo=appveyor)](https://ci.appveyor.com/project/WLANKabel/ioBroker-calendar/)
 
 ## Calendar adapter for ioBroker
 
@@ -27,7 +28,7 @@ The following step is only needed if your ioBroker is installed on another compu
 ### Windows:
 
 Run ```nodepad.exe``` with admin right and open the ```C:\Windows\System32\drivers\etc\hosts``` file.
-Add a entry like ```192.168.0.10    example.com``` (<IP-Adress ioBroker>     <FQDN>)
+Add a entry like ```192.168.0.10    example.com``` (\<IP-Adress ioBroker\>     \<FQDN\>)
 Save the file and open the webinterface via the <FQDN> you have written in the hosts file. Example: http://example.com:8081
 
 ### Linux:
@@ -60,7 +61,7 @@ You can add your caldav calendar in the adapter config.
 Enter your access data and the host name in the config.
 
 ### Baseurl list
-* Nextcloud: https://<Hostname>/remote.php/dav/principals
+* Nextcloud: https://\<Hostname\>/remote.php/dav/principals
 * Web.de: https://caldav.web.de
 * mail.de: https://kalender.mail.de
 * Posteo: https://posteo.de:8443
@@ -69,11 +70,15 @@ If you know more, please let me know so that I can include them.
 
 ## iCal File Calendar
 
-You can add your ical calendar in the adapter config.
+You can add your iCal calendar in the adapter config.
 
 Enter the file path on the CalDav tab in the hostname field.
 
 ## Changelog
+
+### 1.1.2 (2020-03-03)
+* (WLAN-Kabel) #15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts
+* (WLAN-Kabel) #15 - Fixed a bug that caused a 'TypeError' message
 
 ### 1.1.1 (2020-02-26)
 * (WLAN-Kabel) Password encryption added

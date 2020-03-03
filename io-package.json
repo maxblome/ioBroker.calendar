@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.1.1",
+        "version": "1.1.2",
         "news": {
+            "1.1.2": {
+                "en": "#15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts\n#15 - Fixed a bug that caused a 'TypeError' message",
+                "de": "#15 - Ein schwerwiegender Fehler wurde behoben, der zu falschen Anmeldeinformationen für CalDav-Konten führte\n#15 - Ein Fehler wurde behoben, der eine 'TypeError'-Nachricht verursachte",
+                "ru": "#15 - Исправлена серьезная ошибка, которая приводила к неверным учетным данным для учетных записей CalDav\n#15 - Исправлена ошибка, приводившая к сообщению «TypeError»",
+                "pt": "#15 - Corrigido um bug sério que causava credenciais incorretas nas contas CalDav\n#15 - Corrigido um erro que causava uma mensagem 'TypeError'",
+                "nl": "#15 - Een ernstige bug opgelost die onjuiste inloggegevens voor CalDav-accounts veroorzaakte\n#15 - Een bug gerepareerd die een 'TypeError' bericht veroorzaakte",
+                "fr": "#15 - Correction d'un bug grave qui provoquait des informations d'identification incorrectes pour les comptes CalDav\n#15 - Correction d'un bug qui provoquait un message 'TypeError'",
+                "it": "#15 - Risolto un bug grave che causava credenziali errate per gli account CalDav\n#15 - Risolto un bug che causava un messaggio \"TypeError\"",
+                "es": "#15 - Se corrigió un error grave que causaba credenciales incorrectas para las cuentas de CalDav\n#15 - Se corrigió un error que causaba un mensaje 'TypeError'",
+                "pl": "#15 - Naprawiono poważny błąd, który powodował nieprawidłowe dane uwierzytelniające dla kont CalDav\n#15 - Naprawiono błąd, który powodował komunikat „TypeError”",
+                "zh-cn": "＃15-修复了一个严重的错误，该错误导致CalDav帐户的凭据不正确\n＃15-修复了导致“ TypeError”消息的错误"
+              },
             "1.1.1": {
                 "en": "Password encryption added\nError messages for caldav lib extended\nFixed an issue that caused errors when reading null events",
                 "de": "Passwortverschlüsselung hinzugefügt\nFehlermeldungen für caldav lib erweitert\nEs wurde ein Problem behoben, das beim Lesen von Nullereignissen zu Fehlern führte",
