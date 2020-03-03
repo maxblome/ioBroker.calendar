@@ -573,9 +573,9 @@ async function getGoogleCalendarEvents(calendar, auth, index) {
     return new Promise((resolve, reject) => {
 
         if(calendar.accessToken && calendar.accessToken != '' && calendar.refreshToken && calendar.refreshToken != '' && calendar.id != '') {
-
+            
             const oauth2 = auth;
-    
+            
             oauth2.setCredentials({
                 access_token: calendar.accessToken,
                 refresh_token: calendar.refreshToken

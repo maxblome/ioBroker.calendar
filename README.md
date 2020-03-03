@@ -76,6 +76,10 @@ Enter the file path on the CalDav tab in the hostname field.
 
 ## Changelog
 
+### 1.1.2 (2020-03-03)
+* (WLAN-Kabel) #15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts
+* (WLAN-Kabel) #15 - Fixed a bug that caused a 'TypeError' message
+
 ### 1.1.1 (2020-02-26)
 * (WLAN-Kabel) Password encryption added
 * (WLAN-Kabel) Error messages for caldav lib extended
