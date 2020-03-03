@@ -69,8 +69,6 @@ class Calendar extends utils.Adapter {
 
         for(let i = 0; i < adapter.config.caldav.length; i++) {
 
-            adapter.log.info('KENNWORT: ' + adapter.config.caldav[i].name + ' ' + adapter.config.caldav[i].password);
-
             if(systemConfig && systemConfig.native && systemConfig.native.secret) {
                 adapter.config.caldav[i].password = decrypt(systemConfig.native.secret, adapter.config.caldav[i].password);
             } else {
@@ -90,7 +88,7 @@ class Calendar extends utils.Adapter {
                 }
                 
                 if(ids) {
-                    updateConfig({
+                    await updateConfig({
                         caldav: handleCaldavCalendarIds(adapter.config, i, ids)
                     });
                 }
@@ -107,7 +105,7 @@ class Calendar extends utils.Adapter {
                 adapter.config.caldav[i].color = calendar.color|| '#000000';
                 adapter.config.caldav[i].listIsLoaded = true;
 
-                updateConfig({
+                await updateConfig({
                     caldav: adapter.config.caldav
                 });
             }
@@ -210,19 +208,15 @@ function getDatetime(add = 0, hours = 0, mins = 0, secs = 0, millisecs = 0) {
 
 async function updateConfig(newConfig) {
     // Create the config object
-
-    adapter.log.info(JSON.stringify(newConfig));
-
     const config = {
         ...adapter.config,
         ...newConfig,
     };
 
-    adapter.log.info(JSON.stringify(config));
-
     // Update the adapter object
     const adapterObj = await adapter.getForeignObjectAsync(`system.adapter.${adapter.namespace}`);
     adapterObj.native = config;
+
     await adapter.setForeignObjectAsync(`system.adapter.${adapter.namespace}`, adapterObj);
 }
 
@@ -245,6 +239,9 @@ async function startCalendarSchedule(config, auth = null) {
     }
 
     for(let i = 0; i < caldavCalendars.length; i++) {
+
+        adapter.log.info('CALDAV ' + caldavCalendars[i].name);
+
         if(caldavCalendars[i].active) {
 
             try {
@@ -252,10 +249,12 @@ async function startCalendarSchedule(config, auth = null) {
                 
                 handleCalendarEvents(caldavCalendars[i], events);
             } catch(error) {
-                adapter.log.error(error);
+                adapter.log.error('ERROR ' + error);
             }
         }
     }
+
+    adapter.log.info('NACH LADEN');
 
     cronJob = cron.schedule('*/10 * * * *', async () => {
         for(let i = 0; i < googleCalendars.length; i++) {
@@ -284,6 +283,8 @@ async function startCalendarSchedule(config, auth = null) {
             }
         }
     });
+
+    adapter.log.info('NACH CRON');
 
     adapter.log.debug('Cron job started');
 }
@@ -389,19 +390,24 @@ function sameDate(targetDate, calendarDate) {
     } else return false;
 }
 
-function addChannel(id, name) {
+async function addChannel(id, name) {
 
     //adapter.createChannel(device, id, {name: name});
 
-    adapter.setObjectNotExistsAsync(id, {
-        type: 'channel',
-        common: {
-            name: name,
-        },
-        native: {},
-    }).then((prom) => {
-        if(prom) adapter.log.debug('Channel added => ' + prom.id);
-    });
+    try {
+        const result = await adapter.setObjectNotExistsAsync(id, {
+            type: 'channel',
+            common: {
+                name: name,
+            },
+            native: {},
+        });
+        
+        if(result) adapter.log.debug('Channel added => ' + result.id);
+        
+    } catch(error) {
+        adapter.log.error(error);
+    }
 }
 
 function addDevice(id, name) {
@@ -471,34 +477,37 @@ function addState(id, name, type, role, value = null) {
  */
 function removeDeleted(oldList, newList, calendarId) {
 
-    for(let i = oldList.length - 1; i >= 0; i--) {
+    if(oldList) {
         
-        if(oldList[i]._id.split('.')[2] == calendarId && oldList[i]._id.split('.')[4]) {
+        for(let i = oldList.length - 1; i >= 0; i--) {
             
-            let event = false;
+            if(oldList[i]._id.split('.')[2] == calendarId && oldList[i]._id.split('.')[4]) {
+                
+                let event = false;
 
-            for(const j of newList.keys()) {
+                for(const j of newList.keys()) {
 
-                if(oldList[i]._id.split('.')[3] == j) {
+                    if(oldList[i]._id.split('.')[3] == j) {
 
-                    for(let k = 0; k < newList.get(j); k++) {
-                        if(oldList[i]._id.split('.')[4] == k) {
+                        for(let k = 0; k < newList.get(j); k++) {
+                            if(oldList[i]._id.split('.')[4] == k) {
 
-                            event = true;
+                                event = true;
+                            }
                         }
                     }
                 }
-            }
 
-            if(event == false) {
-                adapter.log.debug(`Delete channel => ${oldList[i]._id}`);
-                adapter.delObject(oldList[i]._id);
-                adapter.getStates(oldList[i]._id + '*', (err, states) => {
-                    for (const id in states) {
-                        adapter.log.debug(`Delete state => ${id}`);
-                        adapter.delObject(id);
-                    }
-                });
+                if(event == false) {
+                    adapter.log.debug(`Delete channel => ${oldList[i]._id}`);
+                    adapter.delObject(oldList[i]._id);
+                    adapter.getStates(oldList[i]._id + '*', (err, states) => {
+                        for (const id in states) {
+                            adapter.log.debug(`Delete state => ${id}`);
+                            adapter.delObject(id);
+                        }
+                    });
+                }
             }
         }
     }
@@ -521,7 +530,7 @@ async function getCaldavCalendarEvents(calendar) {
             return;
         }
 
-        for(let i = 0; i < events.length; i++) {
+        for(const i in events) {
             
             let calendar;
 
@@ -545,7 +554,7 @@ async function getCaldavCalendarEvents(calendar) {
 
             const parsedEvents = ical.parse(events);
 
-            for(let i = 0; i < parsedEvents.events.length; i++) {
+            for(const i in parsedEvents.events) {
                 list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
                     parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
             }
@@ -619,7 +628,7 @@ async function handleCalendarEvents(calendar, events) {
         for(let i = 0; i <= ((calendar.days > 0) ? calendar.days : 7); i++) {
             dayEvents.set(i, []);
         }
-
+        
         for (let i = 0; i < events.length; i++) {
 
             for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
