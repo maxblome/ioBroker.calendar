@@ -240,8 +240,6 @@ async function startCalendarSchedule(config, auth = null) {
 
     for(let i = 0; i < caldavCalendars.length; i++) {
 
-        adapter.log.info('CALDAV ' + caldavCalendars[i].name);
-
         if(caldavCalendars[i].active) {
 
             try {
@@ -253,8 +251,6 @@ async function startCalendarSchedule(config, auth = null) {
             }
         }
     }
-
-    adapter.log.info('NACH LADEN');
 
     cronJob = cron.schedule('*/10 * * * *', async () => {
         for(let i = 0; i < googleCalendars.length; i++) {
@@ -283,8 +279,6 @@ async function startCalendarSchedule(config, auth = null) {
             }
         }
     });
-
-    adapter.log.info('NACH CRON');
 
     adapter.log.debug('Cron job started');
 }
@@ -327,7 +321,7 @@ function handleCaldavCalendarIds(config, index, ids) {
 
     const configCaldav = config.caldav;
 
-    for(let i = 0; i < ids.length; i++) {
+    for(const i in ids) {
 
         const calendar = ids[i];
 
@@ -534,14 +528,22 @@ async function getCaldavCalendarEvents(calendar) {
             
             let calendar;
 
+            adapter.log.debug('RAWDATA');
+            adapter.log.debug(JSON.stringify(events[i]));
+
             if(Object.keys(events[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
                 calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
             } else {
                 calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
             }
+
+            adapter.log.debug('PARSED ICAL');
+            adapter.log.debug(JSON.stringify(calendar));
             
-            for(let i = 0; i < calendar.events.length; i++) {
-                list.push(util.normalizeEvent(calendar.events[i].summary, calendar.events[i].description, calendar.events[i].dtstart.val, calendar.events[i].dtend.val));
+            if(calendar.events) {
+                for(const j in calendar.events) {
+                    list.push(util.normalizeEvent(calendar.events[j].summary, calendar.events[j].description, calendar.events[j].dtstart.val, calendar.events[j].dtend.val));
+                }
             }
         }
 
@@ -554,9 +556,14 @@ async function getCaldavCalendarEvents(calendar) {
 
             const parsedEvents = ical.parse(events);
 
-            for(const i in parsedEvents.events) {
-                list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
-                    parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
+            adapter.log.debug('PARSED ICAL');
+            adapter.log.debug(JSON.stringify(parsedEvents));
+
+            if(parsedEvents.events) {
+                for(const i in parsedEvents.events) {
+                    list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
+                        parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
+                }
             }
         } catch(error) {
             adapter.log.error(error);
@@ -629,30 +636,13 @@ async function handleCalendarEvents(calendar, events) {
             dayEvents.set(i, []);
         }
         
-        for (let i = 0; i < events.length; i++) {
+        for(const i in events) {
 
             for(let j = 0; j <= ((calendar.days > 0) ? calendar.days : 7); j++) {
 
-                //addChannel(`${calendar.id}.${j}`, `Day ${j}`);
-
                 if(sameDate(getDatetime(j), events[i].startTime)) {
 
-                    //const objNamespace = `${calendar.id}.${j}.${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`;
-
-                    //addChannel(objNamespace, `Event ${(dayCount.get(j) > 0) ? dayCount.get(j) : 0}`);
-
-                    //const eventObj = {};
                     const dayObj = dayEvents.get(j) || [];
-
-                    //addState(`${objNamespace}.summary`, 'Summary', 'string', 'event.summary', events[i].summary);
-                    //addState(`${objNamespace}.description`, 'Description', 'string', 'event.description', events[i].description);
-                    //addState(`${objNamespace}.startTime`, 'Start Time', 'string', 'event.startTime', (events[i].start.date || events[i].start.dateTime));
-                    //addState(`${objNamespace}.endTime`, 'End Time', 'string', 'event.endTime', (events[i].end.date.substring(0, 9) || events[i].end.dateTime.substring(0, 9)));
-
-                    /*eventObj.summary = events[i].summary;
-                    eventObj.description = events[i].description;
-                    eventObj.startTime = events[i].startTime;
-                    eventObj.endTime = events[i].endTime;*/
 
                     dayObj.push(events[i]);
 
