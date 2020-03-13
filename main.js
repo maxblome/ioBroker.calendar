@@ -517,7 +517,7 @@ async function getCaldavCalendarEvents(calendar) {
         
         try {
             adapter.log.debug(`Read events of '${calendar.name}'`);
-            events = await caldav.queryEvents(calendar.path, calendar.username, calendar.password);
+            events = await caldav.queryEvents(adapter, calendar.path, calendar.username, calendar.password);
 
         } catch(error) {
             adapter.log.error(error);
