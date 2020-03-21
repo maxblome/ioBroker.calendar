@@ -162,6 +162,8 @@
     "native": {
         "port": 8095,
         "googleActive": false,
+        "googleClientID": "",
+        "googleClientSecret": "",
         "caldavActive": false,
         "fqdn": "localhost",
         "google": [
