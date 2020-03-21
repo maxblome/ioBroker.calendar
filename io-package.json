@@ -126,7 +126,7 @@
             "zh-cn": "连接到您的Google，Caldav和Ical日历"
         },
         "authors": [
-            "WLAN-Kabel wlan-kabel@outlook.de"
+            "WLAN-Kabel <wlan-kabel@outlook.de>"
         ],
         "keywords": [
             "ioBroker",
