@@ -114,16 +114,16 @@
             "zh-cn": "日历"
         },
         "desc": {
-            "en": "Connect to your google and caldav calendar",
-            "de": "Stellen Sie eine Verbindung zu Ihrem Google- und CalDAV-Kalender her",
-            "ru": "Подключитесь к своему календарю Google и Caldav",
-            "pt": "Conecte-se ao seu calendário google e caldav",
-            "nl": "Maak verbinding met uw Google- en Caldav-agenda",
-            "fr": "Connectez-vous à votre calendrier Google et Caldav",
-            "it": "Collegati al tuo calendario google e caldav",
-            "es": "Conéctese a su calendario de google y caldav",
-            "pl": "Połącz się z kalendarzem Google i Caldav",
-            "zh-cn": "连接到您的Google和Caldav日历"
+            "en": "Connect to your google, caldav and ical calendar",
+            "de": "Stellen Sie eine Verbindung zu Ihrem Google-, CalDAV- und iCal-Kalender her",
+            "ru": "Подключитесь к своему гуглу, калдаву и календарю",
+            "pt": "Conecte-se ao seu calendário google, caldav e ical",
+            "nl": "Maak verbinding met uw google-, caldav- en ical-agenda",
+            "fr": "Connectez-vous à votre calendrier google, caldav et ical",
+            "it": "Collegati al tuo calendario google, caldav e ical",
+            "es": "Conéctese a su calendario google, caldav e ical",
+            "pl": "Połącz się ze swoim google, caldav i kalendarzem ical",
+            "zh-cn": "连接到您的Google，Caldav和Ical日历"
         },
         "authors": [
             "WLAN-Kabel wlan-kabel@outlook.de"
