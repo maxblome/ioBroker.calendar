@@ -71,7 +71,8 @@ class Calendar extends utils.Adapter {
             
             const calendar = this.config.caldav[i];
 
-            if(calendar.active && !calendar.listIsLoaded && calendar.hostname.startsWith('http')) {
+            if(calendar.active && !calendar.listIsLoaded && calendar.username != '' &&
+                calendar.password != '' && calendar.hostname.startsWith('http')) {
 
                 let ids;
 
@@ -86,7 +87,8 @@ class Calendar extends utils.Adapter {
                         caldav: this.handleCaldavCalendarIds(i, ids)
                     });
                 }
-            } else if(calendar.active && !calendar.listIsLoaded && !calendar.hostname.startsWith('http')) {
+            } else if(calendar.active && !calendar.listIsLoaded && (!calendar.hostname.startsWith('http') ||
+                calendar.hostname.startsWith('http') && calendar.username == '' && calendar.password == '')) {
             
                 let id = Buffer.from((calendar.hostname || '')).toString('base64').replace(/[+/= ]/g, '');
                 id = id.substring(id.length - 31, id.length - 1);
@@ -116,7 +118,8 @@ class Calendar extends utils.Adapter {
             
             if((this.config.caldavActive && calendar.active && calendar.username != '' && calendar.hostname != '' && calendar.password != ''
                 && calendar.id != '' && calendar.path != '' && (calendar.hostname) ? calendar.hostname.startsWith('http') : false) ||
-                (this.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && (calendar.hostname) ? !calendar.hostname.startsWith('http') : false) ||
+                (this.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && (calendar.hostname) ? (!calendar.hostname.startsWith('http') ||
+                calendar.hostname.startsWith('http') && calendar.username == '' && calendar.password == '') : false) ||
                 (this.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '')) {
                 this.addDevice(calendar.id, calendar.name);
                 this.addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
@@ -323,11 +326,12 @@ class Calendar extends utils.Adapter {
         if(this.config.caldavActive && calendar.active && calendar.username != '' &&
             calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '' && calendar.hostname.startsWith('http')) {
             
+            this.log.debug(`Read events of '${calendar.name}'`);
+
             try {
 
                 const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
 
-                this.log.debug(`Read events of '${calendar.name}'`);
                 events = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
                 
             } catch(error) {
@@ -359,14 +363,14 @@ class Calendar extends utils.Adapter {
             }
     
             this.log.info(`Updated calendar "${calendar.name}"`);
-        } else if(this.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '' && !calendar.hostname.startsWith('http')) {
-    
+        } else if(this.config.caldavActive && calendar.active && calendar.hostname != '' && calendar.id != '') {
+
             try {
                 this.log.debug(`Read events of '${calendar.name}'`);
-                events = await ical.readFile(calendar.hostname);
+                events = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
     
                 const parsedEvents = ical.parse(events);
-    
+                
                 this.log.debug('PARSED ICAL');
                 this.log.debug(JSON.stringify(parsedEvents));
     
