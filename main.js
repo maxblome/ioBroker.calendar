@@ -271,7 +271,7 @@ class Calendar extends utils.Adapter {
 
         let firstIsSet = false;
     
-        const configCaldav = this.config.caldav;
+        const caldav = this.config.caldav.slice();
     
         for(const i in ids) {
     
@@ -282,46 +282,45 @@ class Calendar extends utils.Adapter {
                 let id = Buffer.from((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
                 id = id.substring(id.length - 31, id.length - 1);
                 
-                this.log.info(`Set calendar name "${index}": Old name => "${configCaldav[index].name}" New name "${calendar.name}"`);
+                this.log.info(`Set calendar name "${index}": Old name => "${caldav[index].name}" New name "${calendar.name}"`);
                 
-                configCaldav[index].active = true;
-                configCaldav[index].path = calendar.path;
-                configCaldav[index].name = calendar.name;
-                configCaldav[index].id =  id;
-                configCaldav[index].ctag = calendar.ctag || '';
-                configCaldav[index].color = calendar.color|| '#000000';
-                configCaldav[index].listIsLoaded = true;
-                //configCaldav[index].password = util.encrypt(this.systemConfig.native.secret, configCaldav[index].password);
+                caldav[index].active = true;
+                caldav[index].path = calendar.path;
+                caldav[index].name = calendar.name;
+                caldav[index].id =  id;
+                caldav[index].ctag = calendar.ctag || '';
+                caldav[index].color = calendar.color|| '#000000';
+                caldav[index].listIsLoaded = true;
     
                 firstIsSet = true;
                 
             } else {
-    
-                const configCalendar = {};
                 
-                this.log.info(`Found calendar in account "${configCaldav[index].username}": Calendar "${calendar.name}"`);
+                this.log.info(`Found calendar in account "${caldav[index].username}": Calendar "${calendar.name}"`);
                 this.log.info(`The calendar "${calendar.name}" was added. You can activate the calendar in the config.`);
                 
                 let id = Buffer.from((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
                 id = id.substring(id.length - 31, id.length - 1);
                 
-                configCalendar.active = false;
-                configCalendar.name = calendar.name;
-                configCalendar.id = id;
-                configCalendar.hostname = configCaldav[index].hostname;
-                configCalendar.username = configCaldav[index].username;
-                configCalendar.password = configCaldav[index].password;
-                configCalendar.ctag = calendar.ctag || '';
-                configCalendar.days = configCaldav[index].days;
-                configCalendar.color = calendar.color || '#000000';
-                configCalendar.path = calendar.path;
-                configCalendar.listIsLoaded = true;
+                const configCalendar = {
+                    active: false,
+                    name: calendar.name,
+                    id: id,
+                    hostname: caldav[index].hostname,
+                    username: caldav[index].username,
+                    password: caldav[index].password,
+                    ctag: calendar.ctag || '',
+                    days: caldav[index].days,
+                    color: calendar.color || '#000000',
+                    path: calendar.path,
+                    listIsLoaded: true
+                };
                 
-                configCaldav.push(configCalendar);
+                caldav.push(configCalendar);
             }
         }
-    
-        return configCaldav;
+        
+        return caldav;
     }
 
     async getCaldavCalendarEvents(calendar) {
