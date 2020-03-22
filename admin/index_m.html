@@ -97,6 +97,7 @@
                 settings.caldav[c].days = settings.caldav[c].days || 7;
                 settings.caldav[c].color = settings.caldav[c].color || '#000000';
                 settings.caldav[c].listIsLoaded = settings.caldav[c].listIsLoaded || false;
+                settings.caldav[c].ignoreCertificateErrors = settings.caldav[c].ignoreCertificateErrors || false;
             }
 
             google = settings.google || [];
@@ -252,6 +253,7 @@
                                     <th data-name="listIsLoaded" style="display: none" data-type="checkbox">listIsLoaded</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <th data-name="color" data-type="color" class="translate">color</th>
+                                    <th data-name="ignoreCertificateErrors" data-type="checkbox" class="translate">ignoreCertificateErrors</th>
                                     <th data-buttons="delete up down"></th>
                                 </tr>
                             </thead>

@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.1.2",
+        "version": "1.1.3",
         "news": {
+            "1.1.3": {
+                "en": "Added possibility to load ics files from web servers\nAdded option to ignore certificate errors\nCaldav time range is used to reduce traffic\nCaldav library revised\nGoogle functions outsourced in own lib\nFixed caldav bug that occurred when end times were missing\nAdded more debug messages",
+                "de": "Möglichkeit zum Laden von ICS-Dateien von Webservern hinzugefügt\nOption zum Ignorieren von Zertifikatfehlern hinzugefügt\nCalDAV 'time range' wird verwendet, um den Datenverkehr zu reduzieren\nCalDAV Bibliothek überarbeitet\nGoogle-Funktionen in eigene Bibliothek ausgelagert\nCalDAV-Fehler behoben, der auftrat, wenn Endzeiten fehlten\nWeitere Debug-Meldungen hinzugefügt",
+                "ru": "Добавлена возможность загрузки файлов ics с веб-серверов\nДобавлена возможность игнорировать ошибки сертификата\nCaldav временной диапазон используется для сокращения трафика\nБиблиотека Caldav переработана\nФункции Google переданы в собственную библиотеку\nИсправлена ошибка caldav, возникавшая при отсутствии времени окончания\nДобавлено больше отладочных сообщений",
+                "pt": "Possibilidade adicionada para carregar arquivos ics de servidores web\nAdicionada opção para ignorar erros de certificado\nO intervalo de tempo de Caldav é usado para reduzir o tráfego\nBiblioteca Caldav revisada\nFunções do Google terceirizadas em lib própria\nCorrigido o erro caldav que ocorria quando faltavam os horários de término\nAdicionadas mais mensagens de depuração",
+                "nl": "Mogelijkheid toegevoegd om ics-bestanden van webservers te laden\nOptie toegevoegd om certificaatfouten te negeren\nHet tijdsbereik van Caldav wordt gebruikt om het verkeer te verminderen\nCaldav-bibliotheek herzien\nGoogle-functies uitbesteed in eigen lib\nFixed caldav bug die optrad wanneer de eindtijd ontbrak\nMeer foutopsporingsberichten toegevoegd",
+                "fr": "Ajout de la possibilité de charger des fichiers ics à partir de serveurs Web\nAjout d'une option pour ignorer les erreurs de certificat\nLa plage horaire de Caldav est utilisée pour réduire le trafic\nBibliothèque Caldav révisée\nFonctions Google externalisées dans sa propre bibliothèque\nCorrection d'un bug de caldav qui se produisait lorsque les heures de fin étaient manquantes\nAjout de plus de messages de débogage",
+                "it": "Aggiunta la possibilità di caricare file ics da server Web\nAggiunta opzione per ignorare gli errori del certificato\nL'intervallo di tempo di Caldav viene utilizzato per ridurre il traffico\nBiblioteca Caldav rivista\nFunzioni di Google esternalizzate nella propria lib\nRisolto bug caldav che si verificava quando mancavano i tempi di fine\nAggiunti altri messaggi di debug",
+                "es": "Posibilidad añadida de cargar archivos ics desde servidores web\nOpción agregada para ignorar errores de certificado\nEl rango de tiempo Caldav se usa para reducir el tráfico\nBiblioteca Caldav revisada\nFunciones de Google subcontratadas en su propia biblioteca\nSe corrigió el error de caldav que ocurría cuando faltaban los tiempos finales\nSe agregaron más mensajes de depuración",
+                "pl": "Dodano możliwość ładowania plików ics z serwerów internetowych\nDodano opcję ignorowania błędów certyfikatu\nZakres czasu Caldav służy do zmniejszenia ruchu\nZmieniono bibliotekę Caldav\nFunkcje Google zlecone na zewnątrz we własnej bibliotece\nNaprawiono błąd caldav, który pojawiał się, gdy brakowało czasów zakończenia\nDodano więcej wiadomości debugowania",
+                "zh-cn": "增加了从Web服务器加载ics文件的可能性\n添加了忽略证书错误的选项\n卡尔达夫（Caldav）时间范围用于减少流量\n修改Caldav库\nGoogle函数在自己的库中外包\n修复了缺少结束时间时发生的caldav错误\n添加了更多调试消息"
+            },
             "1.1.2": {
                 "en": "#15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts\n#15 - Fixed a bug that caused a 'TypeError' message",
                 "de": "#15 - Ein schwerwiegender Fehler wurde behoben, der zu falschen Anmeldeinformationen für CalDav-Konten führte\n#15 - Ein Fehler wurde behoben, der eine 'TypeError'-Nachricht verursachte",
@@ -114,19 +126,19 @@
             "zh-cn": "日历"
         },
         "desc": {
-            "en": "Connect to your google and caldav calendar",
-            "de": "Stellen Sie eine Verbindung zu Ihrem Google- und CalDAV-Kalender her",
-            "ru": "Подключитесь к своему календарю Google и Caldav",
-            "pt": "Conecte-se ao seu calendário google e caldav",
-            "nl": "Maak verbinding met uw Google- en Caldav-agenda",
-            "fr": "Connectez-vous à votre calendrier Google et Caldav",
-            "it": "Collegati al tuo calendario google e caldav",
-            "es": "Conéctese a su calendario de google y caldav",
-            "pl": "Połącz się z kalendarzem Google i Caldav",
-            "zh-cn": "连接到您的Google和Caldav日历"
+            "en": "Connect to your google, caldav and ical calendar",
+            "de": "Stellen Sie eine Verbindung zu Ihrem Google-, CalDAV- und iCal-Kalender her",
+            "ru": "Подключитесь к своему гуглу, калдаву и календарю",
+            "pt": "Conecte-se ao seu calendário google, caldav e ical",
+            "nl": "Maak verbinding met uw google-, caldav- en ical-agenda",
+            "fr": "Connectez-vous à votre calendrier google, caldav et ical",
+            "it": "Collegati al tuo calendario google, caldav e ical",
+            "es": "Conéctese a su calendario google, caldav e ical",
+            "pl": "Połącz się ze swoim google, caldav i kalendarzem ical",
+            "zh-cn": "连接到您的Google，Caldav和Ical日历"
         },
         "authors": [
-            "WLAN-Kabel wlan-kabel@outlook.de"
+            "WLAN-Kabel <wlan-kabel@outlook.de>"
         ],
         "keywords": [
             "ioBroker",
@@ -162,6 +174,8 @@
     "native": {
         "port": 8095,
         "googleActive": false,
+        "googleClientID": "",
+        "googleClientSecret": "",
         "caldavActive": false,
         "fqdn": "localhost",
         "google": [
@@ -190,7 +204,8 @@
                 "days": 7,
                 "color": "#000000",
                 "path": "",
-                "listIsLoaded": false
+                "listIsLoaded": false,
+                "ignoreCertificateErrors": false
             }
         ]
     },

@@ -193,5 +193,17 @@ systemDictionary = {
         'es': 'contraseña',
         'pl': 'hasło',
         'zh-cn': '密码'
+    },
+    'ignoreCertificateErrors': {
+        'en': 'Ignore certificate errors',
+        'de': 'Zertifikatfehler ignorieren',
+        'ru': 'Игнорировать ошибки сертификата',
+        'pt': 'Ignorar erros de certificado',
+        'nl': 'Certificaatfouten negeren',
+        'fr': 'Ignorer les erreurs de certificat',
+        'it': 'Ignora errori del certificato',
+        'es': 'Ignorar errores de certificado',
+        'pl': 'Zignoruj błędy certyfikatu',
+        'zh-cn': '忽略证书错误'
     }
 };
