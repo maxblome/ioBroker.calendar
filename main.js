@@ -36,6 +36,10 @@ class Calendar extends utils.Adapter {
      */
     async onReady() {
 
+        console.debug = (message) => {
+            this.log.debug(message);
+        };
+
         if(!String.prototype.startsWith) {
             String.prototype.startsWith = function(searchString, position) {
                 position = position || 0;
@@ -324,8 +328,8 @@ class Calendar extends utils.Adapter {
                 const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
 
                 this.log.debug(`Read events of '${calendar.name}'`);
-                events = await cal.getEvents(calendar.path);
-    
+                events = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
+                
             } catch(error) {
                 this.log.error(error);
                 return;
@@ -334,9 +338,6 @@ class Calendar extends utils.Adapter {
             for(const i in events) {
                 
                 let calendar;
-    
-                this.log.debug('RAWDATA');
-                this.log.debug(JSON.stringify(events[i]));
     
                 if(Object.keys(events[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
                     calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
@@ -349,7 +350,10 @@ class Calendar extends utils.Adapter {
                 
                 if(calendar.events) {
                     for(const j in calendar.events) {
-                        list.push(util.normalizeEvent(calendar.events[j].summary, calendar.events[j].description, calendar.events[j].dtstart.val, calendar.events[j].dtend.val));
+
+                        const event = calendar.events[j];
+
+                        list.push(util.normalizeEvent(event.summary, event.description, event.dtstart.val, (event.dtend ? event.dtend.val : event.duration)));
                     }
                 }
             }
@@ -427,7 +431,7 @@ class Calendar extends utils.Adapter {
 
         if(events) {
     
-            const dayCount = new Map();
+            const dayCount = {};
     
             const dayEvents = {};
     
@@ -456,7 +460,7 @@ class Calendar extends utils.Adapter {
                 this.addChannel(`${calendar.id}.${i}`, `Day ${i}`);
                 this.addState(`${calendar.id}.${i}.events`, 'Events', 'string', 'calendar.events', JSON.stringify(dayEvents[i]));
                 this.addState(`${calendar.id}.${i}.date`, 'Date', 'string', 'calendar.date', util.getDatetime(parseInt(i)).substring(0, 10));
-                this.addState(`${calendar.id}.${i}.eventsNumber`, 'Number of events', 'number', 'calendar.events', (dayCount.has(i)) ? dayCount[i] : '0');
+                this.addState(`${calendar.id}.${i}.eventsNumber`, 'Number of events', 'number', 'calendar.events', dayCount[i] ? dayCount[i] : '0');
             }
     
             this.getChannels((error, channels) => {
@@ -654,12 +658,12 @@ class Calendar extends utils.Adapter {
                                     const index = req.query.state;
                                     let isRightScope = false;
                                     
-                                    for(let i = 0; i < scope.length; i++) {
+                                    for(const i in scope) {
                                         if(scope[i] == this.google.getScope()) {
     
                                             isRightScope = true;
     
-                                            i = scope.length;
+                                            break;
                                         }
                                     }
     
