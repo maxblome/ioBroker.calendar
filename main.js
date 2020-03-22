@@ -237,31 +237,18 @@ class Calendar extends utils.Adapter {
 
     async getCaldavCalendarIds(calendar) {
 
-        const username = calendar.username;
-        const password = calendar.password;
-    
         let calendarIds;
-    
+        
         try {
-    
-            const href = await caldav.getHref(calendar.hostname);
             
-            this.log.debug(`HREF: ${href}`);
+            const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
             
-            const principal = await caldav.getUserPrincipal(href, username, password);
-            
-            this.log.debug(`PRINCIPAL: ${principal}`);
-            
-            const home = await caldav.getCalendarHome(principal, username, password);
-            
-            this.log.debug(`HOME: ${home}`);
-    
-            calendarIds = await caldav.queryCalendarList(home, username, password);
+            calendarIds = await cal.getCalendarList();
             
             this.log.debug(`CALENDARS: ${JSON.stringify(calendarIds)}`);
             
-        } catch(err) {
-            this.log.error(err);
+        } catch(error) {
+            this.log.error(error);
         }
     
         return calendarIds;
@@ -313,7 +300,8 @@ class Calendar extends utils.Adapter {
                     days: caldav[index].days,
                     color: calendar.color || '#000000',
                     path: calendar.path,
-                    listIsLoaded: true
+                    listIsLoaded: true,
+                    ignoreCertificateErrors: caldav[index].ignoreCertificateErrors
                 };
                 
                 caldav.push(configCalendar);
@@ -332,8 +320,11 @@ class Calendar extends utils.Adapter {
             calendar.hostname != '' && calendar.password != '' && calendar.id != '' && calendar.path != '' && calendar.hostname.startsWith('http')) {
             
             try {
+
+                const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
+
                 this.log.debug(`Read events of '${calendar.name}'`);
-                events = await caldav.queryEvents(this, calendar.path, calendar.username, calendar.password);
+                events = await cal.getEvents(calendar.path);
     
             } catch(error) {
                 this.log.error(error);
