@@ -394,41 +394,43 @@ class Calendar extends utils.Adapter {
 
     handleCalendarIds(index, ids, tokens) {
 
-        const configGoogle = this.config.google;
+        const google = this.config.google.slice();
     
-        this.log.info(`Set calendar name "${index}": Old name => "${configGoogle[index].name}" New name "${ids.calendars[0].summary}"`);
+        this.log.info(`Set calendar name "${index}": Old name => "${google[index].name}" New name "${ids.calendars[0].summary}"`);
+        
+        google[index].active = true;
+        google[index].account = ids.account;
+        google[index].name = ids.calendars[0].summary;
+        google[index].id = ids.calendars[0].id;
+        google[index].email = ids.calendars[0].email;
+        google[index].accessToken = tokens.access_token;
+        google[index].refreshToken = tokens.refresh_token;
+        google[index].color = ids.calendars[0].color;
     
-        configGoogle[index].active = true;
-        configGoogle[index].account = ids.account;
-        configGoogle[index].name = ids.calendars[0].summary;
-        configGoogle[index].id = ids.calendars[0].id;
-        configGoogle[index].email = ids.calendars[0].email;
-        configGoogle[index].accessToken = tokens.access_token;
-        configGoogle[index].refreshToken = tokens.refresh_token;
-        configGoogle[index].color = ids.calendars[0].color;
-    
-        for(let i = 1; i < ids.calendars.length; i++) {
-    
-            const calendar = ids.calendars[i];
-            const configCalendar = {};
-            
-            this.log.info(`Found calendar in account "${ids.account}": Calendar "${calendar.summary}"`);
-            this.log.info(`The calendar "${calendar.summary}" was added. You can activate the calendar in the config.`);
-    
-            configCalendar.active = false;
-            configCalendar.account = ids.account;
-            configCalendar.name = `${ids.calendars[0].summary} ${calendar.summary}`;
-            configCalendar.id = calendar.id;
-            configCalendar.email = calendar.email;
-            configCalendar.accessToken = tokens.access_token;
-            configCalendar.refreshToken = tokens.refresh_token;
-            configCalendar.days = configGoogle[index].days;
-            configCalendar.color = calendar.color;
-    
-            configGoogle.push(configCalendar);
+        for(const i in ids.calendars) {
+            if(i != '0') {
+                const calendar = ids.calendars[i];
+                const configCalendar = {
+                    active: false,
+                    account: ids.account,
+                    name: `${ids.calendars[0].summary} ${calendar.summary}`,
+                    id: calendar.id,
+                    email: calendar.email,
+                    accessToken: tokens.access_token,
+                    refreshToken: tokens.refresh_token,
+                    days: google[index].days,
+                    color: calendar.color,
+                    ctag: ''
+                };
+                
+                this.log.info(`Found calendar in account "${ids.account}": Calendar "${calendar.summary}"`);
+                this.log.info(`The calendar "${calendar.summary}" was added. You can activate the calendar in the config.`);
+        
+                google.push(configCalendar);
+            }
         }
     
-        return configGoogle;
+        return google;
     }
 
     async handleCalendarEvents(calendar, events) {
