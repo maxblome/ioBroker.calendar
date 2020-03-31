@@ -122,7 +122,7 @@ class Calendar extends utils.Adapter {
                 calendar.hostname.startsWith('http') && calendar.username == '' && calendar.password == '') : false) ||
                 (this.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '')) {
                 this.addDevice(calendar.id, calendar.name);
-                this.addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
+                this.addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username || calendar.email || '');
                 this.addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
                 this.addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
             } else {
