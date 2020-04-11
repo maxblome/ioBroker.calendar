@@ -51,9 +51,11 @@ class Calendar extends utils.Adapter {
             this.google = new googleAuth(this.config.googleClientID, this.config.googleClientSecret, this.config.fqdn, this.config.port);
         }
         
-        if(this.hasCalendarWithoutGrantPermission()) {
+        await this.handleCalendarWithoutGrantPermission();
+
+        /*if(this.hasCalendarWithoutGrantPermission()) {
             this.server = this.initServer();
-        }
+        }*/
         
         try {
             this.systemConfig = await this.getForeignObjectAsync('system.config');
@@ -223,7 +225,7 @@ class Calendar extends utils.Adapter {
         }
     }
 
-    hasCalendarWithoutGrantPermission() {
+    async handleCalendarWithoutGrantPermission() {
 
         if(this.config && this.config.googleActive) {
     
@@ -231,9 +233,14 @@ class Calendar extends utils.Adapter {
     
             for(const i in google) {
                 if(google[i].active) {
-                    if(!google[i].accessToken || google[i].accessToken == '' ||
-                        !google[i].refreshToken || google[i].refreshToken == '') {
-                        return true;
+                    if((!google[i].accessToken || google[i].accessToken == '' ||
+                        !google[i].refreshToken || google[i].refreshToken == '') &&
+                        google[i].code) {
+                        
+                        const tokens = await this.getGoogleTokens(google[i].code, i);
+
+                        await this.getGoogleCalendarIds(google[i], tokens, i);
+
                     }
                 }
             }
@@ -404,6 +411,7 @@ class Calendar extends utils.Adapter {
         google[index].accessToken = tokens.access_token;
         google[index].refreshToken = tokens.refresh_token;
         google[index].color = ids.calendars[0].color;
+        google[index].main = ids.calendars[0].id;
     
         for(const i in ids.calendars) {
             if(i != '0') {
@@ -418,7 +426,8 @@ class Calendar extends utils.Adapter {
                     refreshToken: tokens.refresh_token,
                     days: google[index].days,
                     color: calendar.color,
-                    ctag: ''
+                    ctag: '',
+                    main: ids.calendars[0].id
                 };
                 
                 this.log.info(`Found calendar in account "${ids.account}": Calendar "${calendar.summary}"`);
@@ -472,6 +481,46 @@ class Calendar extends utils.Adapter {
                     this.log.error(error);
                 } else this.removeDeleted(channels, dayCount, calendar.id);
             });
+        }
+    }
+
+    async getGoogleCalendarIds(calendar, tokens, index) {
+        
+        let calendarIds;
+
+        try {
+            calendarIds = await this.google.getCalendarIds();
+            this.log.info(`Received calender ids for google calendar "${index}" (${this.config.google[index].name})`);
+        } catch (error) {
+            this.log.error(error);
+            return;
+        }
+
+        this.updateConfiguration({
+            google: this.handleCalendarIds(index, calendarIds, tokens)
+        });
+    }
+
+    async getGoogleTokens(code, index) {
+        let tokens;
+    
+        try {
+            tokens = await this.google.loadAuthenticationTokens(code);
+
+            if(!tokens.refresh_token) {
+
+                const errorMessage = `No refresh token received for google calendar "${index}" (${this.config.google[index].name}). Please remove app access from your google account and try again.`;
+                
+                this.log.error(errorMessage);
+                return null;
+            } else {
+                this.log.info(`Received tokens for google calendar "${index}" (${this.config.google[index].name})`);
+
+                return tokens;
+            }
+        } catch(err) {
+            this.log.error(err);
+            return;
         }
     }
 
