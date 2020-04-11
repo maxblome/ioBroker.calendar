@@ -339,7 +339,6 @@ class Calendar extends utils.Adapter {
             try {
 
                 const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
-
                 data = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
                 
             } catch(error) {
@@ -352,10 +351,8 @@ class Calendar extends utils.Adapter {
                 let vcal;
     
                 if(Object.keys(data[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
-                    //calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
                     vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]['_']);
                 } else {
-                    //calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
                     vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]);
                 }
     
@@ -387,15 +384,6 @@ class Calendar extends utils.Adapter {
                         }
                     }
                 }
-                
-                /*if(calendar.events) {
-                    for(const j in calendar.events) {
-
-                        const event = calendar.events[j];
-
-                        list.push(util.normalizeEvent(event.summary, event.description, event.dtstart.val, (event.dtend ? event.dtend.val : event.duration)));
-                    }
-                }*/
             }
     
             this.log.info(`Updated calendar "${calendar.name}"`);
@@ -405,11 +393,9 @@ class Calendar extends utils.Adapter {
                 this.log.debug(`Read events of '${calendar.name}'`);
                 data = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
     
-                //const parsedEvents = ical.parse(data);
                 const vcal = new vcalendar(data);
 
                 this.log.debug('PARSED ICAL');
-                //this.log.debug(JSON.stringify(parsedEvents));
     
                 const events = vcal.getEvents();
 
@@ -437,13 +423,6 @@ class Calendar extends utils.Adapter {
                         }
                     }
                 }
-
-                /*if(parsedEvents.events) {
-                    for(const i in parsedEvents.events) {
-                        list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
-                            parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
-                    }
-                }*/
             } catch(error) {
                 this.log.error(error.stack);
             }
