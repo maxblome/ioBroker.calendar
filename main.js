@@ -16,6 +16,7 @@ const googleAuth = require('./lib/google');
 const ical = require('./lib/ical');
 const caldav = require('./lib/caldav');
 const util = require('./lib/utils');
+const vcalendar = require('./lib/vcalendar');
 
 class Calendar extends utils.Adapter {
 
@@ -40,12 +41,12 @@ class Calendar extends utils.Adapter {
             this.log.debug(message);
         };
 
-        if(!String.prototype.startsWith) {
+        /*if(!String.prototype.startsWith) {
             String.prototype.startsWith = function(searchString, position) {
                 position = position || 0;
                 return this.indexOf(searchString, position) === position;
             };
-        }
+        }*/
         
         if(this.config.googleActive) {
             this.google = new googleAuth(this.config.googleClientID, this.config.googleClientSecret, this.config.fqdn, this.config.port);
@@ -327,7 +328,7 @@ class Calendar extends utils.Adapter {
 
     async getCaldavCalendarEvents(calendar) {
 
-        let events;
+        let data;
         const list = [];
     
         if(this.config.caldavActive && calendar.active && calendar.username != '' &&
@@ -339,34 +340,62 @@ class Calendar extends utils.Adapter {
 
                 const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
 
-                events = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
+                data = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
                 
             } catch(error) {
                 this.log.error(error);
                 return;
             }
     
-            for(const i in events) {
+            for(const i in data) {
                 
-                let calendar;
+                let vcal;
     
-                if(Object.keys(events[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
-                    calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
+                if(Object.keys(data[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
+                    //calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
+                    vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]['_']);
                 } else {
-                    calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+                    //calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+                    vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]);
                 }
     
                 this.log.debug('PARSED ICAL');
-                this.log.debug(JSON.stringify(calendar));
+
+                const events = vcal.getEvents();
+
+                if(events && events.length > 0) {
+                    for(const i in events) {
+
+                        const event = events[i];
+
+                        list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                            event.getStartTime(), event.getEndTime()));
+
+                        const until = new Date();
+
+                        const recurrences = event.getRecurrencesUntil(new Date(Date.UTC(until.getUTCFullYear(),
+                            until.getUTCMonth(), until.getUTCDate() + calendar.days)));
+
+                        if(recurrences) {
+                            for(const i in recurrences) {
+                                
+                                const event = recurrences[i];
+
+                                list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                                    event.getStartTime(), event.getEndTime()));
+                            }
+                        }
+                    }
+                }
                 
-                if(calendar.events) {
+                /*if(calendar.events) {
                     for(const j in calendar.events) {
 
                         const event = calendar.events[j];
 
                         list.push(util.normalizeEvent(event.summary, event.description, event.dtstart.val, (event.dtend ? event.dtend.val : event.duration)));
                     }
-                }
+                }*/
             }
     
             this.log.info(`Updated calendar "${calendar.name}"`);
@@ -374,21 +403,49 @@ class Calendar extends utils.Adapter {
 
             try {
                 this.log.debug(`Read events of '${calendar.name}'`);
-                events = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
+                data = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
     
-                const parsedEvents = ical.parse(events);
-                
+                //const parsedEvents = ical.parse(data);
+                const vcal = new vcalendar(data);
+
                 this.log.debug('PARSED ICAL');
-                this.log.debug(JSON.stringify(parsedEvents));
+                //this.log.debug(JSON.stringify(parsedEvents));
     
-                if(parsedEvents.events) {
+                const events = vcal.getEvents();
+
+                if(events && events.length > 0) {
+                    for(const i in events) {
+
+                        const event = events[i];
+
+                        list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                            event.getStartTime(), event.getEndTime()));
+
+                        const until = new Date();
+
+                        const recurrences = event.getRecurrencesUntil(new Date(Date.UTC(until.getUTCFullYear(),
+                            until.getUTCMonth(), until.getUTCDate() + calendar.days)));
+
+                        if(recurrences) {
+                            for(const i in recurrences) {
+                                
+                                const event = recurrences[i];
+
+                                list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                                    event.getStartTime(), event.getEndTime()));
+                            }
+                        }
+                    }
+                }
+
+                /*if(parsedEvents.events) {
                     for(const i in parsedEvents.events) {
                         list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
                             parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
                     }
-                }
+                }*/
             } catch(error) {
-                this.log.error(error);
+                this.log.error(error.stack);
             }
     
             this.log.info(`Updated calendar "${calendar.name}"`);
