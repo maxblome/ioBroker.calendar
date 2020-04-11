@@ -14,30 +14,6 @@ systemDictionary = {
         'pl': 'strona główna',
         'zh-cn': '主要地点'
     },
-    'Google': {
-        'en': 'Google',
-        'de': 'Google',
-        'ru': 'Google',
-        'pt': 'Google',
-        'nl': 'Google',
-        'fr': 'Google',
-        'it': 'Google',
-        'es': 'Google',
-        'pl': 'Google',
-        'zh-cn': '谷歌'
-    },
-    'CalDav': {
-        'en': 'CalDav',
-        'de': 'CalDav',
-        'ru': 'CalDav',
-        'pt': 'CalDav',
-        'nl': 'CalDav',
-        'fr': 'CalDav',
-        'it': 'CalDav',
-        'es': 'CalDav',
-        'pl': 'CalDav',
-        'zh-cn': '卡尔达夫'
-    },
     'FQDN:': {
         'en': 'FQDN:',
         'de': 'FQDN:',
@@ -205,5 +181,17 @@ systemDictionary = {
         'es': 'Ignorar errores de certificado',
         'pl': 'Zignoruj błędy certyfikatu',
         'zh-cn': '忽略证书错误'
+    },
+    'code': {
+        'en': 'code',
+        'de': 'Code',
+        'ru': 'код',
+        'pt': 'código',
+        'nl': 'code',
+        'fr': 'code',
+        'it': 'codice',
+        'es': 'código',
+        'pl': 'kod',
+        'zh-cn': '码'
     }
 };
