@@ -8,14 +8,11 @@
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
 
-// Load your modules here, e.g.:
-const express = require('express');
-const http = require('http');
-
 const googleAuth = require('./lib/google');
 const ical = require('./lib/ical');
 const caldav = require('./lib/caldav');
 const util = require('./lib/utils');
+const vcalendar = require('./lib/vcalendar');
 
 class Calendar extends utils.Adapter {
 
@@ -40,26 +37,17 @@ class Calendar extends utils.Adapter {
             this.log.debug(message);
         };
 
-        if(!String.prototype.startsWith) {
-            String.prototype.startsWith = function(searchString, position) {
-                position = position || 0;
-                return this.indexOf(searchString, position) === position;
-            };
+        try {
+            this.systemConfig = await this.getForeignObjectAsync('system.config');
+        } catch(error) {
+            this.log.error(error);
         }
         
         if(this.config.googleActive) {
             this.google = new googleAuth(this.config.googleClientID, this.config.googleClientSecret, this.config.fqdn, this.config.port);
         }
         
-        if(this.hasCalendarWithoutGrantPermission()) {
-            this.server = this.initServer();
-        }
-        
-        try {
-            this.systemConfig = await this.getForeignObjectAsync('system.config');
-        } catch(error) {
-            this.log.error(error);
-        }
+        await this.handleCalendarWithoutGrantPermission();
 
         for(const i in this.config.caldav) {
 
@@ -122,7 +110,7 @@ class Calendar extends utils.Adapter {
                 calendar.hostname.startsWith('http') && calendar.username == '' && calendar.password == '') : false) ||
                 (this.config.googleActive && calendar.active && calendar.accessToken && calendar.refreshToken && calendar.id != '')) {
                 this.addDevice(calendar.id, calendar.name);
-                this.addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username);
+                this.addState(`${calendar.id}.account`, 'E-Mail', 'string', 'calendar.account', calendar.username || calendar.email || '');
                 this.addState(`${calendar.id}.name`, 'Calendar name', 'string', 'calendar.name', calendar.name);
                 this.addState(`${calendar.id}.color`, 'Calendar color', 'string', 'calendar.color', calendar.color);
             } else {
@@ -132,13 +120,18 @@ class Calendar extends utils.Adapter {
             }
         }
 
-        const googleEnabled = this.config.googleActive && this.google;
-        const caldavEnabled = this.config.caldavActive;
+        this.googleEnabled = this.config.googleActive && this.google;
+        this.caldavEnabled = this.config.caldavActive;
 
-        if(googleEnabled || caldavEnabled) {
-            await this.startCalendarSchedule(googleEnabled, caldavEnabled);
-            this.schedule = setInterval(() => this.startCalendarSchedule(googleEnabled, caldavEnabled), 10 * 60000);
-            this.log.debug('Schedule started');
+        if(this.googleEnabled || this.caldavEnabled) {
+
+            await this.startCalendarSchedule();
+            await this.startNewCalendarSchedule();
+
+            this.schedule = setInterval(() => this.startCalendarSchedule(), 10 * 60000);
+            this.scheduleNewCalendars = setInterval(() => this.startNewCalendarSchedule(), 10 * 60000);
+
+            this.log.debug('Schedules started');
         }
     }
 
@@ -153,9 +146,9 @@ class Calendar extends utils.Adapter {
                 this.log.debug('Schedule stopped');
             }
 
-            if(this.server) {
-                this.server.server.close();
-                this.log.debug('Server stopped');
+            if(this.scheduleNewCalendars) {
+                clearInterval(this.scheduleNewCalendars);
+                this.log.debug('Schedule NewCalendars stopped');
             }
 
             callback();
@@ -165,7 +158,7 @@ class Calendar extends utils.Adapter {
     }
 
     updateConfiguration(newConfig) {
-
+        
         // Create the config object
         const config = {
             ...this.config,
@@ -174,17 +167,18 @@ class Calendar extends utils.Adapter {
 
         for(const i in config.caldav) {
             config.caldav[i].password = util.encrypt(this.systemConfig.native.secret, config.caldav[i].password);
+
         }
 
         this.updateConfig(config);
     }
 
-    async startCalendarSchedule(googleEnabled, caldavEnabled) {
+    async startCalendarSchedule() {
 
         const google = this.config.google;
         const caldav = this.config.caldav;
 
-        if(googleEnabled) {
+        if(this.googleEnabled) {
             for(const i in google) {
 
                 const calendar = google[i];
@@ -199,14 +193,14 @@ class Calendar extends utils.Adapter {
         
                         this.handleCalendarEvents(calendar, events);
                     } catch(error) {
-                        this.log.warn(`No permission granted for calendar "${calendar.name}". Please visit http://${this.config.fqdn}:${this.config.port}/google/login/${i}`);
+                        this.log.warn(`No permission granted for calendar "${calendar.name}". Please grant permission.`);
                         this.log.error(error);
                     }
                 }
             }
         }
 
-        if(caldavEnabled) {
+        if(this.caldavEnabled) {
             for(const i in caldav) {
 
                 if(caldav[i].active) {
@@ -216,14 +210,162 @@ class Calendar extends utils.Adapter {
                         
                         this.handleCalendarEvents(caldav[i], events);
                     } catch(error) {
-                        this.log.error('ERROR ' + error);
+                        this.log.error(error);
                     }
                 }
             }
         }
     }
 
-    hasCalendarWithoutGrantPermission() {
+    async startNewCalendarSchedule() {
+
+        const google = this.config.google;
+        const caldav = this.config.caldav;
+
+        if(this.googleEnabled) {
+            for(const i in google) {
+
+                const calendar = google[i];
+                
+                if(calendar.active && calendar.main === calendar.id) {
+
+                    this.log.debug(`Read calendar of '${calendar.name}'`);
+
+                    try {
+                        const ids = await this.google.getCalendarIds(calendar.accessToken, calendar.refreshToken);
+
+                        for(const i in google) {
+
+                            const id = google[i].id;
+
+                            for(const i in ids.calendars) {
+
+                                const calendar = ids.calendars[i];
+    
+                                if(calendar.id === id) {
+                                    ids.calendars.splice(i, 1);
+                                }     
+                            }
+                        }
+
+                        const newGoogle = this.config.google.slice();
+                    
+                        for(const i in ids.calendars) {
+                            const newCalendar = ids.calendars[i];
+                            const configCalendar = {
+                                active: false,
+                                account: ids.account,
+                                name: `${calendar.name} ${newCalendar.summary}`,
+                                id: newCalendar.id,
+                                email: newCalendar.email,
+                                accessToken: calendar.accessToken,
+                                refreshToken: calendar.refreshToken,
+                                days: calendar.days,
+                                color: newCalendar.color,
+                                ctag: '',
+                                main: calendar.id,
+                                code: calendar.code
+                            };
+                            
+                            this.log.info(`Found calendar in account "${ids.account}": Calendar "${newCalendar.summary}"`);
+                            this.log.info(`The calendar "${newCalendar.summary}" was added. You can activate the calendar in the config.`);
+                    
+                            newGoogle.push(configCalendar);
+                        }
+                        
+                        if(ids.calendars && ids.calendars.length > 0) {
+                            this.updateConfiguration({
+                                google: newGoogle
+                            });
+                        }
+
+                    } catch (error) {
+                        this.log.error(error);
+                        return;
+                    }
+                }
+            }
+        }
+
+        if(this.caldavEnabled) {
+            for(const i in caldav) {
+
+                const calendar = caldav[i];
+
+                if(calendar.active && calendar.main === calendar.id) {
+                    
+                    if(calendar.username && calendar.username != '' && calendar.password &&
+                        calendar.password != '' && calendar.hostname.startsWith('http')) {
+
+                        this.log.debug(`Read calendar of '${calendar.name}'`);
+                        
+                        let ids;
+        
+                        try {
+                            ids = await this.getCaldavCalendarIds(calendar);
+                        } catch(err) {
+                            this.log.error(err);
+                        }
+
+                        for(const i in caldav) {
+
+                            const id = caldav[i].id;
+
+                            for(const i in ids) {
+
+                                const calendar = ids[i];
+                                
+                                let calId = Buffer.from((calendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
+                                calId = calId.substring(calId.length - 31, calId.length - 1);
+                                this.log.debug(id + ' ' + calId);
+                                if(calId === id) {
+                                    ids.splice(i, 1);
+                                }     
+                            }
+                        }
+
+                        const newCaldav = this.config.caldav.slice();
+                        
+                        for(const i in ids) {
+
+                            const newCalendar = ids[i];
+
+                            this.log.info(`Found calendar in account "${calendar.username}": Calendar "${newCalendar.name}"`);
+                            this.log.info(`The calendar "${newCalendar.name}" was added. You can activate the calendar in the config.`);
+                            
+                            let id = Buffer.from((newCalendar.path || '')).toString('base64').replace(/[+/= ]/g, '');
+                            id = id.substring(id.length - 31, id.length - 1);
+
+                            const configCalendar = {
+                                active: false,
+                                name: newCalendar.name,
+                                id: id,
+                                hostname: calendar.hostname,
+                                username: calendar.username,
+                                password: calendar.password,
+                                ctag: newCalendar.ctag || '',
+                                days: calendar.days,
+                                color: newCalendar.color || '#000000',
+                                path: newCalendar.path,
+                                listIsLoaded: true,
+                                ignoreCertificateErrors: calendar.ignoreCertificateErrors
+                            };
+                            
+                            newCaldav.push(configCalendar);
+                        }
+
+                        if(ids && ids.length > 0) {
+                            this.updateConfiguration({
+                                caldav: newCaldav
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    async handleCalendarWithoutGrantPermission() {
 
         if(this.config && this.config.googleActive) {
     
@@ -231,15 +373,17 @@ class Calendar extends utils.Adapter {
     
             for(const i in google) {
                 if(google[i].active) {
-                    if(!google[i].accessToken || google[i].accessToken == '' ||
-                        !google[i].refreshToken || google[i].refreshToken == '') {
-                        return true;
+                    if((!google[i].accessToken || google[i].accessToken == '' ||
+                        !google[i].refreshToken || google[i].refreshToken == '') &&
+                        google[i].code) {
+                        
+                        const tokens = await this.getGoogleTokens(google[i].code, i);
+                        
+                        await this.getGoogleCalendarIds(google[i], tokens, i);
                     }
                 }
             }
         }
-    
-        return false;
     }
 
     async getCaldavCalendarIds(calendar) {
@@ -285,6 +429,7 @@ class Calendar extends utils.Adapter {
                 caldav[index].ctag = calendar.ctag || '';
                 caldav[index].color = calendar.color|| '#000000';
                 caldav[index].listIsLoaded = true;
+                caldav[index].main = id;
     
                 firstIsSet = true;
                 
@@ -308,7 +453,8 @@ class Calendar extends utils.Adapter {
                     color: calendar.color || '#000000',
                     path: calendar.path,
                     listIsLoaded: true,
-                    ignoreCertificateErrors: caldav[index].ignoreCertificateErrors
+                    ignoreCertificateErrors: caldav[index].ignoreCertificateErrors,
+                    main: caldav[index].id
                 };
                 
                 caldav.push(configCalendar);
@@ -320,7 +466,7 @@ class Calendar extends utils.Adapter {
 
     async getCaldavCalendarEvents(calendar) {
 
-        let events;
+        let data;
         const list = [];
     
         if(this.config.caldavActive && calendar.active && calendar.username != '' &&
@@ -331,33 +477,49 @@ class Calendar extends utils.Adapter {
             try {
 
                 const cal = new caldav(calendar.hostname, calendar.username, calendar.password, !calendar.ignoreCertificateErrors);
-
-                events = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
+                data = await cal.getEvents(calendar.path, util.getCalDAVDatetime(), util.getCalDAVDatetime(calendar.days));
                 
             } catch(error) {
                 this.log.error(error);
                 return;
             }
     
-            for(const i in events) {
+            for(const i in data) {
                 
-                let calendar;
+                let vcal;
     
-                if(Object.keys(events[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
-                    calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]['_']);
+                if(Object.keys(data[i].propstat[0].prop[0]['calendar-data'][0]).includes('_')) {
+                    vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]['_']);
                 } else {
-                    calendar = ical.parse(events[i].propstat[0].prop[0]['calendar-data'][0]);
+                    vcal = new vcalendar(data[i].propstat[0].prop[0]['calendar-data'][0]);
                 }
     
                 this.log.debug('PARSED ICAL');
-                this.log.debug(JSON.stringify(calendar));
-                
-                if(calendar.events) {
-                    for(const j in calendar.events) {
 
-                        const event = calendar.events[j];
+                const events = vcal.getEvents();
 
-                        list.push(util.normalizeEvent(event.summary, event.description, event.dtstart.val, (event.dtend ? event.dtend.val : event.duration)));
+                if(events && events.length > 0) {
+                    for(const i in events) {
+
+                        const event = events[i];
+
+                        list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                            event.getStartTime(), event.getEndTime()));
+
+                        const until = new Date();
+
+                        const recurrences = event.getRecurrencesUntil(new Date(Date.UTC(until.getUTCFullYear(),
+                            until.getUTCMonth(), until.getUTCDate() + calendar.days)));
+
+                        if(recurrences) {
+                            for(const i in recurrences) {
+                                
+                                const event = recurrences[i];
+
+                                list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                                    event.getStartTime(), event.getEndTime()));
+                            }
+                        }
                     }
                 }
             }
@@ -367,21 +529,40 @@ class Calendar extends utils.Adapter {
 
             try {
                 this.log.debug(`Read events of '${calendar.name}'`);
-                events = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
+                data = calendar.hostname.startsWith('http') ? await ical.getFile(calendar.hostname) : await ical.readFile(calendar.hostname);
     
-                const parsedEvents = ical.parse(events);
-                
+                const vcal = new vcalendar(data);
+
                 this.log.debug('PARSED ICAL');
-                this.log.debug(JSON.stringify(parsedEvents));
     
-                if(parsedEvents.events) {
-                    for(const i in parsedEvents.events) {
-                        list.push(util.normalizeEvent(parsedEvents.events[i].summary, parsedEvents.events[i].description,
-                            parsedEvents.events[i].dtstart.val, parsedEvents.events[i].dtend.val));
+                const events = vcal.getEvents();
+
+                if(events && events.length > 0) {
+                    for(const i in events) {
+
+                        const event = events[i];
+
+                        list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                            event.getStartTime(), event.getEndTime()));
+
+                        const until = new Date();
+
+                        const recurrences = event.getRecurrencesUntil(new Date(Date.UTC(until.getUTCFullYear(),
+                            until.getUTCMonth(), until.getUTCDate() + calendar.days)));
+
+                        if(recurrences) {
+                            for(const i in recurrences) {
+                                
+                                const event = recurrences[i];
+
+                                list.push(util.normalizeEvent(event.getSummary(), event.getDescription(),
+                                    event.getStartTime(), event.getEndTime()));
+                            }
+                        }
                     }
                 }
             } catch(error) {
-                this.log.error(error);
+                this.log.error(error.stack);
             }
     
             this.log.info(`Updated calendar "${calendar.name}"`);
@@ -404,6 +585,7 @@ class Calendar extends utils.Adapter {
         google[index].accessToken = tokens.access_token;
         google[index].refreshToken = tokens.refresh_token;
         google[index].color = ids.calendars[0].color;
+        google[index].main = ids.calendars[0].id;
     
         for(const i in ids.calendars) {
             if(i != '0') {
@@ -418,7 +600,9 @@ class Calendar extends utils.Adapter {
                     refreshToken: tokens.refresh_token,
                     days: google[index].days,
                     color: calendar.color,
-                    ctag: ''
+                    ctag: '',
+                    code: google[index].code,
+                    main: ids.calendars[0].id
                 };
                 
                 this.log.info(`Found calendar in account "${ids.account}": Calendar "${calendar.summary}"`);
@@ -472,6 +656,46 @@ class Calendar extends utils.Adapter {
                     this.log.error(error);
                 } else this.removeDeleted(channels, dayCount, calendar.id);
             });
+        }
+    }
+
+    async getGoogleCalendarIds(calendar, tokens, index) {
+        
+        let calendarIds;
+
+        try {
+            calendarIds = await this.google.getCalendarIds();
+            this.log.info(`Received calender ids for google calendar "${index}" (${this.config.google[index].name})`);
+        } catch (error) {
+            this.log.error(error);
+            return;
+        }
+        
+        this.updateConfiguration({
+            google: this.handleCalendarIds(index, calendarIds, tokens)
+        });
+    }
+
+    async getGoogleTokens(code, index) {
+        let tokens;
+    
+        try {
+            tokens = await this.google.loadAuthenticationTokens(code);
+            
+            if(!tokens.refresh_token) {
+
+                const errorMessage = `No refresh token received for google calendar "${index}" (${this.config.google[index].name}). Please remove app access from your google account and try again.`;
+                
+                this.log.error(errorMessage);
+                return null;
+            } else {
+                this.log.info(`Received tokens for google calendar "${index}" (${this.config.google[index].name})`);
+
+                return tokens;
+            }
+        } catch(error) {
+            this.log.error(error);
+            return;
         }
     }
 
@@ -617,127 +841,6 @@ class Calendar extends utils.Adapter {
             if(error !== 'Not exists') {
                 this.log.error(`[${id}] ${error}`);
             }
-        }
-    }
-
-    initServer() {
-
-        const server = {};
-    
-        if(this.config && this.config.port) {
-    
-            server.app = express();
-
-            if(this.google) {
-                server.app.get('/google/login/:id', (req, res) => {
-    
-                    const id = req.params.id;
-                    
-                    //Check if calendar id exists
-                    if(id < this.config.google.length && id >= 0) {
-    
-                        const calendar = this.config.google[id];
-    
-                        //Check if a refresh token exists
-                        if(!calendar.refreshToken) {
-    
-                            const url = this.google.generateAuthUrl(id);
-    
-                            res.redirect(url);
-                        } else res.send(`The rights for calendar ${req.params.id} have already been granted.`); 
-                    } else res.send(`Cannot find calendar ${req.params.id}.`);
-                });
-    
-                server.app.get('/google/success', (req, res) => {
-                    res.send('Done');
-                });
-    
-                server.app.get('/google', async (req, res) => {
-                    if(req.query) {
-                        if(req.query.state) {
-                            if(req.query.state < this.config.google.length && req.query.state >= 0) {
-                                if(req.query.scope) {
-    
-                                    const scope = req.query.scope.split(' ');
-                                    const index = req.query.state;
-                                    let isRightScope = false;
-                                    
-                                    for(const i in scope) {
-                                        if(scope[i] == this.google.getScope()) {
-    
-                                            isRightScope = true;
-    
-                                            break;
-                                        }
-                                    }
-    
-                                    if(isRightScope) {
-    
-                                        let tokens;
-    
-                                        try {
-                                            tokens = await this.google.loadAuthenticationTokens(req.query.code);
-    
-                                            if(!tokens.refresh_token) {
-    
-                                                const errorMessage = `No refresh token received for google calendar "${index}" (${this.config.google[index].name}). Please remove app access from your google account and try again.`;
-                                                
-                                                this.log.error(errorMessage);
-                                                res.send(errorMessage);
-                                                return;
-                                            } else {
-                                                this.log.info(`Received tokens for google calendar "${index}" (${this.config.google[index].name})`);
-                                            }
-                                        } catch(err) {
-                                            this.log.error(err);
-                                            res.send(err);
-                                            return;
-                                        }
-    
-                                        let calendarIds;
-    
-                                        try {
-                                            calendarIds = await this.google.getCalendarIds();
-                                            this.log.info(`Received calender ids for google calendar "${index}" (${this.config.google[index].name})`);
-                                        } catch (error) {
-                                            this.log.error(error);
-                                            res.send(error);
-                                            return;
-                                        }
-    
-                                        this.updateConfiguration({
-                                            google: this.handleCalendarIds(index, calendarIds, tokens)
-                                        });
-    
-                                        res.redirect('/google/success');
-                                    } else res.send('Wrong scope were defined');
-                                } else res.send('No scope were defined');
-                            } else res.send(`Calendar ${req.query.state} not found`);
-                        } else res.send('No calendar defined');
-                    } else res.send('No parameters were passed');            
-                });
-            }
-            
-            server.server = http.createServer(server.app);
-        } else {
-            this.log.error('Port is missing');
-        }
-    
-        if(server && server.server) {
-            this.getPort(this.config.port, (port) => {
-                if (port != this.config.port) {
-                    this.log.error('Port ' + this.config.port + ' already in use');
-                    process.exit(1);
-                }
-                
-                server.server.listen(port);
-            });
-        }
-    
-        if(server && server.app) {
-            return server;
-        } else {
-            return null;
         }
     }
 }

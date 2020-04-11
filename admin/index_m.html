@@ -83,6 +83,8 @@
                 settings.google[c].ctag = settings.google[c].ctag || '';
                 settings.google[c].days = settings.google[c].days || 7;
                 settings.google[c].color = settings.google[c].color || '#000000';
+                settings.google[c].code = settings.google[c].code || '';
+                settings.google[c].main = settings.google[c].main || '';
             }
 
             for (var c = 0; c < settings.caldav.length; c++) {
@@ -98,6 +100,7 @@
                 settings.caldav[c].color = settings.caldav[c].color || '#000000';
                 settings.caldav[c].listIsLoaded = settings.caldav[c].listIsLoaded || false;
                 settings.caldav[c].ignoreCertificateErrors = settings.caldav[c].ignoreCertificateErrors || false;
+                settings.caldav[c].main = settings.caldav[c].main || '';
             }
 
             google = settings.google || [];
@@ -108,6 +111,19 @@
             values2table('google', google, onChange);
             values2table('caldav', caldav, onChange);
             
+            $('#googleAuthentication').on('click', function () {
+                var clientID = $('#googleClientID').val();
+                var clientSecret = $('#googleClientSecret').val();
+
+                if(clientID && clientID != '' && clientSecret && clientSecret != '') {
+
+                    var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar&response_type=code&' + 
+                        'client_id=' + clientID + '&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob'
+
+                    window.open(authUrl, '_blank');
+                }
+            });
+
             // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
             if (M) M.updateTextFields();
         }
@@ -136,19 +152,21 @@
         }
     </script>
     <style>
-        #google-values td:nth-of-type(3), /* ID */
-        #google-values td:nth-of-type(4), /* E-Mail */
-        #google-values td:nth-of-type(5), /* Account */
-        #google-values td:nth-of-type(6), /* Access Token */
-        #google-values td:nth-of-type(7), /* Refresh Token */
-        #google-values td:nth-of-type(8) { /* Ctag */
+        #google-values td:nth-of-type(4), /* ID */
+        #google-values td:nth-of-type(5), /* E-Mail */
+        #google-values td:nth-of-type(6), /* Account */
+        #google-values td:nth-of-type(7), /* Access Token */
+        #google-values td:nth-of-type(8), /* Refresh Token */
+        #google-values td:nth-of-type(9), /* Ctag */
+        #google-values td:nth-of-type(10) { /* main */
             display: none;
         }
 
         #caldav-values td:nth-of-type(3), /* ID */
         #caldav-values td:nth-of-type(7), /* ctag */
         #caldav-values td:nth-of-type(8), /* Path */
-        #caldav-values td:nth-of-type(9) { /* listIsLoaded */
+        #caldav-values td:nth-of-type(9), /* listIsLoaded */
+        #caldav-values td:nth-of-type(10) { /* main */
             display: none;
         }
     </style>
@@ -160,8 +178,8 @@
             <div class="col s12">
                 <ul class="tabs">
                     <li class="tab col s2"><a href="#tab-main" class="translate active">Main</a></li>
-                    <li class="tab col s2"><a href="#tab-google" class="translate">Google</a></li>
-                    <li class="tab col s2"><a href="#tab-caldav" class="translate">CalDav</a></li>
+                    <li class="tab col s2"><a href="#tab-google">Google</a></li>
+                    <li class="tab col s2"><a href="#tab-caldav">CalDav/iCal</a></li>
                     <!--<li class="tab col s2"><a href="#tab-microsoft" class="translate">Microsoft</a></li>-->
                 </ul>
             </div>
@@ -198,9 +216,12 @@
                         <input class="value" id="googleClientID" type="text"/>
                         <label class="translate" for="googleClientID">Client ID:</label>
                     </div>
-                    <div class="col s12 m6">
+                    <div class="col s12 m4">
                         <input class="value" id="googleClientSecret" type="text"/>
                         <label class="translate" for="googleClientSecret">Client Secret:</label>
+                    </div>
+                    <div class="col s1 m1 l1">
+                        <a id="googleAuthentication" class="btn">Authenticate</a>
                     </div>
                 </div>
                 <div class="col s12 m12" id="google">
@@ -211,12 +232,14 @@
                                 <tr>
                                     <th data-name="active" class="translate" data-type="checkbox">active</th>
                                     <th data-name="name" class="translate">name</th>
+                                    <th data-name="code" class="translate">code</th>
                                     <th data-name="id" style="display: none">id</th>
                                     <th data-name="email" style="display: none">email</th>
                                     <th data-name="account" style="display: none">account</th>
                                     <th data-name="accessToken" style="display: none">accessToken</th>
                                     <th data-name="refreshToken" style="display: none">refreshToken</th>
                                     <th data-name="ctag" style="display: none">ctag</th>
+                                    <th data-name="main" style="display: none">main</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <!--<th data-name="color" data-type="color" class="translate">color</th> comming soon-->
                                     <th data-name="color" data-type="color" class="translate">color</th>
@@ -251,6 +274,7 @@
                                     <th data-name="ctag" style="display: none">ctag</th>
                                     <th data-name="path" style="display: none">path</th>
                                     <th data-name="listIsLoaded" style="display: none" data-type="checkbox">listIsLoaded</th>
+                                    <th data-name="main" style="display: none">main</th>
                                     <th data-name="days" class="translate" data-type="number" data-min="1" data-max="365" data-default="7">days</th>
                                     <th data-name="color" data-type="color" class="translate">color</th>
                                     <th data-name="ignoreCertificateErrors" data-type="checkbox" class="translate">ignoreCertificateErrors</th>
