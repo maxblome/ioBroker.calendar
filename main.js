@@ -232,7 +232,7 @@ class Calendar extends utils.Adapter {
                     this.log.debug(`Read calendar of '${calendar.name}'`);
 
                     try {
-                        const ids = await this.google.getCalendarIds();
+                        const ids = await this.google.getCalendarIds(calendar.accessToken, calendar.refreshToken);
 
                         for(const i in google) {
 
