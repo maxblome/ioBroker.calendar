@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "calendar",
-        "version": "1.1.3",
+        "version": "1.2.0",
         "news": {
+            "1.2.0": {
+                "en": "New iCal library to better read calendars and support future event writing functionality\nGoogle authorization changed\nical events with recurrence are now handled\nRegular request for new calendars added\nFixed a bug that caused a \"TypeError\" message on iCal calendars",
+                "de": "Neue iCal-Bibliothek zum besseren Lesen von Kalendern und zur Unterstützung zukünftiger Funktionen zum Schreiben von Ereignissen\nGoogle-Autorisierung geändert\niCal Ereignisse mit Wiederholung werden jetzt behandelt\nRegelmäßige Anfrage nach neuen Kalendern hinzugefügt\nEs wurde ein Fehler behoben, der eine \"TypeError\" -Nachricht in iCal-Kalendern verursachte",
+                "ru": "Новая библиотека iCal для лучшего чтения календарей и поддержки функций записи будущих событий\nАвторизация Google изменена\nРеальные события с повторением теперь обрабатываются\nДобавлен регулярный запрос на новые календари\nИсправлена ошибка, приводившая к появлению сообщения «TypeError» в календарях iCal",
+                "pt": "Nova biblioteca iCal para melhor ler calendários e dar suporte à funcionalidade de gravação de eventos futuros\nAutorização do Google alterada\neventos clínicos com recorrência agora são tratados\nSolicitação regular de novas agendas adicionada\nCorrigido um erro que causava uma mensagem \"TypeError\" nos calendários do iCal",
+                "nl": "Nieuwe iCal-bibliotheek om kalenders beter te lezen en toekomstige functionaliteit voor het schrijven van evenementen te ondersteunen\nGoogle-autorisatie gewijzigd\nical gebeurtenissen met herhaling worden nu afgehandeld\nRegelmatig verzoek om nieuwe kalenders toegevoegd\nEen bug gerepareerd die een \"TypeError\" -bericht veroorzaakte in iCal-kalenders",
+                "fr": "Nouvelle bibliothèque iCal pour une meilleure lecture des calendriers et la prise en charge de la fonctionnalité d'écriture d'événements futurs\nL'autorisation Google a changé\nLes événements cliniques avec récidive sont désormais gérés\nAjout d'une demande régulière de nouveaux calendriers\nCorrection d'un bug qui provoquait un message \"TypeError\" sur les calendriers iCal",
+                "it": "Nuova libreria iCal per leggere meglio i calendari e supportare la funzionalità di scrittura di eventi futuri\nL'autorizzazione di Google è cambiata\neventi gestionali con ricorrenza sono ora gestiti\nAggiunta richiesta regolare per nuovi calendari\nRisolto un bug che causava un messaggio \"TypeError\" sui calendari iCal",
+                "es": "Nueva biblioteca iCal para leer mejor los calendarios y admitir la funcionalidad de escritura de eventos futuros\nAutorización de Google modificada\nlos eventos icos con recurrencia ahora se manejan\nSolicitud regular para nuevos calendarios agregados\nSe corrigió un error que causaba un mensaje \"TypeError\" en los calendarios de iCal",
+                "pl": "Nowa biblioteka iCal do lepszego czytania kalendarzy i obsługi funkcji pisania przyszłych wydarzeń\nAutoryzacja Google uległa zmianie\nobsługiwane są teraz powtarzające się zdarzenia\nDodano regularne żądanie nowych kalendarzy\nNaprawiono błąd, który powodował komunikat „TypeError” w kalendarzach iCal",
+                "zh-cn": "新的iCal库可更好地阅读日历并支持将来的事件编写功能\nGoogle授权已更改\n现在可以处理重复发生的医疗事件\n定期要求添加新日历\n修复了导致iCal日历上出现“ TypeError”消息的错误"
+            },
             "1.1.3": {
                 "en": "Added possibility to load ics files from web servers\nAdded option to ignore certificate errors\nCaldav time range is used to reduce traffic\nCaldav library revised\nGoogle functions outsourced in own lib\nFixed caldav bug that occurred when end times were missing\nAdded more debug messages",
                 "de": "Möglichkeit zum Laden von ICS-Dateien von Webservern hinzugefügt\nOption zum Ignorieren von Zertifikatfehlern hinzugefügt\nCalDAV 'time range' wird verwendet, um den Datenverkehr zu reduzieren\nCalDAV Bibliothek überarbeitet\nGoogle-Funktionen in eigene Bibliothek ausgelagert\nCalDAV-Fehler behoben, der auftrat, wenn Endzeiten fehlten\nWeitere Debug-Meldungen hinzugefügt",
@@ -126,16 +138,16 @@
             "zh-cn": "日历"
         },
         "desc": {
-            "en": "Connect to your google, caldav and ical calendar",
-            "de": "Stellen Sie eine Verbindung zu Ihrem Google-, CalDAV- und iCal-Kalender her",
-            "ru": "Подключитесь к своему гуглу, калдаву и календарю",
-            "pt": "Conecte-se ao seu calendário google, caldav e ical",
-            "nl": "Maak verbinding met uw google-, caldav- en ical-agenda",
-            "fr": "Connectez-vous à votre calendrier google, caldav et ical",
-            "it": "Collegati al tuo calendario google, caldav e ical",
-            "es": "Conéctese a su calendario google, caldav e ical",
-            "pl": "Połącz się ze swoim google, caldav i kalendarzem ical",
-            "zh-cn": "连接到您的Google，Caldav和Ical日历"
+            "en": "Read your google, caldav and ical calendar.",
+            "de": "Lesen Sie Ihren Google-, Caldav- und iCal-Kalender.",
+            "ru": "Читайте ваш Google, Caldav и ical календарь.",
+            "pt": "Leia o seu calendário google, caldav e ical.",
+            "nl": "Lees uw Google-, Caldav- en Iical-agenda.",
+            "fr": "Lisez votre calendrier google, caldav et ical.",
+            "it": "Leggi il tuo calendario google, caldav e ical.",
+            "es": "Lea su calendario de google, caldav e ical.",
+            "pl": "Przeczytaj swój google, caldav i kalendarz ical.",
+            "zh-cn": "阅读您的Google，caldav和ical日历。"
         },
         "authors": [
             "WLAN-Kabel <wlan-kabel@outlook.de>"
@@ -144,7 +156,9 @@
             "ioBroker",
             "calendar",
             "Smart Home",
-            "home automation"
+            "home automation",
+            "ical",
+            "caldav"
         ],
         "license": "MIT",
         "platform": "Javascript/Node.js",
@@ -189,7 +203,9 @@
                 "refreshToken": "",
                 "ctag": "",
                 "days": 7,
-                "color": "#000000"
+                "color": "#000000",
+                "code": "",
+                "main": ""
             }
         ],
         "caldav": [
@@ -197,7 +213,7 @@
                 "active": false,
                 "name": "",
                 "id": "",
-                "hostname": "https://nextcloud.example.com",
+                "hostname": "https://caldav.example.com",
                 "username": "max.mustermann@example.com",
                 "password": "2SS8W2Zve34nWZzt",
                 "ctag": "",
@@ -205,7 +221,8 @@
                 "color": "#000000",
                 "path": "",
                 "listIsLoaded": false,
-                "ignoreCertificateErrors": false
+                "ignoreCertificateErrors": false,
+                "main": ""
             }
         ]
     },
