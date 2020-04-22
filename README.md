@@ -59,10 +59,13 @@ You can add your caldav calendar in the adapter config.
 Enter your access data and the host name in the config.
 
 ### Baseurl list
-* Nextcloud: https://&lt;Hostname&gt;/remote.php/dav or https://&lt;Hostname&gt;/remote.php/dav/principals
-* Web.de: https://caldav.web.de
-* mail.de: https://kalender.mail.de
-* Posteo: https://posteo.de:8443
+| Name | URL |
+| ------ | ------ |
+| GMX | https://caldav.gmx.net |
+| mail&period;de | https://kalender.mail.de |
+| Nextcloud | [https://&lt;Hostname&gt;/remote.php/dav](https://example.com/remote.php/dav) or<br>[https://&lt;Hostname&gt;/remote.php/dav/principals](https://example.com/remote.php/dav/principals) |
+| Posteo | https://posteo.de:8443 |
+| Web&period;de | https://caldav.web.de |
 
 If you know more, please let me know so that I can include them.
 
