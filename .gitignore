@@ -16,3 +16,5 @@ admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 
 www_old
+#ignore .commitinfo created by ioBroker release script
+.commitinfo
