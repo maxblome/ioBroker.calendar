@@ -168,6 +168,7 @@
         "extIcon": "https://raw.githubusercontent.com/WLAN-Kabel/ioBroker.calendar/master/admin/calendar.png",
         "readme": "https://github.com/WLAN-Kabel/ioBroker.calendar/blob/master/README.md",
         "loglevel": "info",
+        "tier": 2,
         "restartAdapters": [
             "vis"
         ],
