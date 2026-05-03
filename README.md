@@ -137,6 +137,8 @@ Enter the file path on the CalDav tab in the hostname field.
 ### 0.0.1
 * (WLAN-Kabel) Initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 MIT License
 
