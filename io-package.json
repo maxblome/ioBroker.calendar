@@ -1,231 +1,231 @@
 {
-    "common": {
-        "name": "calendar",
-        "version": "1.2.0",
-        "news": {
-            "1.2.0": {
-                "en": "New iCal library to better read calendars and support future event writing functionality\nGoogle authorization changed\nical events with recurrence are now handled\nRegular request for new calendars added\nFixed a bug that caused a \"TypeError\" message on iCal calendars",
-                "de": "Neue iCal-Bibliothek zum besseren Lesen von Kalendern und zur Unterstützung zukünftiger Funktionen zum Schreiben von Ereignissen\nGoogle-Autorisierung geändert\niCal Ereignisse mit Wiederholung werden jetzt behandelt\nRegelmäßige Anfrage nach neuen Kalendern hinzugefügt\nEs wurde ein Fehler behoben, der eine \"TypeError\" -Nachricht in iCal-Kalendern verursachte",
-                "ru": "Новая библиотека iCal для лучшего чтения календарей и поддержки функций записи будущих событий\nАвторизация Google изменена\nРеальные события с повторением теперь обрабатываются\nДобавлен регулярный запрос на новые календари\nИсправлена ошибка, приводившая к появлению сообщения «TypeError» в календарях iCal",
-                "pt": "Nova biblioteca iCal para melhor ler calendários e dar suporte à funcionalidade de gravação de eventos futuros\nAutorização do Google alterada\neventos clínicos com recorrência agora são tratados\nSolicitação regular de novas agendas adicionada\nCorrigido um erro que causava uma mensagem \"TypeError\" nos calendários do iCal",
-                "nl": "Nieuwe iCal-bibliotheek om kalenders beter te lezen en toekomstige functionaliteit voor het schrijven van evenementen te ondersteunen\nGoogle-autorisatie gewijzigd\nical gebeurtenissen met herhaling worden nu afgehandeld\nRegelmatig verzoek om nieuwe kalenders toegevoegd\nEen bug gerepareerd die een \"TypeError\" -bericht veroorzaakte in iCal-kalenders",
-                "fr": "Nouvelle bibliothèque iCal pour une meilleure lecture des calendriers et la prise en charge de la fonctionnalité d'écriture d'événements futurs\nL'autorisation Google a changé\nLes événements cliniques avec récidive sont désormais gérés\nAjout d'une demande régulière de nouveaux calendriers\nCorrection d'un bug qui provoquait un message \"TypeError\" sur les calendriers iCal",
-                "it": "Nuova libreria iCal per leggere meglio i calendari e supportare la funzionalità di scrittura di eventi futuri\nL'autorizzazione di Google è cambiata\neventi gestionali con ricorrenza sono ora gestiti\nAggiunta richiesta regolare per nuovi calendari\nRisolto un bug che causava un messaggio \"TypeError\" sui calendari iCal",
-                "es": "Nueva biblioteca iCal para leer mejor los calendarios y admitir la funcionalidad de escritura de eventos futuros\nAutorización de Google modificada\nlos eventos icos con recurrencia ahora se manejan\nSolicitud regular para nuevos calendarios agregados\nSe corrigió un error que causaba un mensaje \"TypeError\" en los calendarios de iCal",
-                "pl": "Nowa biblioteka iCal do lepszego czytania kalendarzy i obsługi funkcji pisania przyszłych wydarzeń\nAutoryzacja Google uległa zmianie\nobsługiwane są teraz powtarzające się zdarzenia\nDodano regularne żądanie nowych kalendarzy\nNaprawiono błąd, który powodował komunikat „TypeError” w kalendarzach iCal",
-                "zh-cn": "新的iCal库可更好地阅读日历并支持将来的事件编写功能\nGoogle授权已更改\n现在可以处理重复发生的医疗事件\n定期要求添加新日历\n修复了导致iCal日历上出现“ TypeError”消息的错误"
-            },
-            "1.1.3": {
-                "en": "Added possibility to load ics files from web servers\nAdded option to ignore certificate errors\nCaldav time range is used to reduce traffic\nCaldav library revised\nGoogle functions outsourced in own lib\nFixed caldav bug that occurred when end times were missing\nAdded more debug messages",
-                "de": "Möglichkeit zum Laden von ICS-Dateien von Webservern hinzugefügt\nOption zum Ignorieren von Zertifikatfehlern hinzugefügt\nCalDAV 'time range' wird verwendet, um den Datenverkehr zu reduzieren\nCalDAV Bibliothek überarbeitet\nGoogle-Funktionen in eigene Bibliothek ausgelagert\nCalDAV-Fehler behoben, der auftrat, wenn Endzeiten fehlten\nWeitere Debug-Meldungen hinzugefügt",
-                "ru": "Добавлена возможность загрузки файлов ics с веб-серверов\nДобавлена возможность игнорировать ошибки сертификата\nCaldav временной диапазон используется для сокращения трафика\nБиблиотека Caldav переработана\nФункции Google переданы в собственную библиотеку\nИсправлена ошибка caldav, возникавшая при отсутствии времени окончания\nДобавлено больше отладочных сообщений",
-                "pt": "Possibilidade adicionada para carregar arquivos ics de servidores web\nAdicionada opção para ignorar erros de certificado\nO intervalo de tempo de Caldav é usado para reduzir o tráfego\nBiblioteca Caldav revisada\nFunções do Google terceirizadas em lib própria\nCorrigido o erro caldav que ocorria quando faltavam os horários de término\nAdicionadas mais mensagens de depuração",
-                "nl": "Mogelijkheid toegevoegd om ics-bestanden van webservers te laden\nOptie toegevoegd om certificaatfouten te negeren\nHet tijdsbereik van Caldav wordt gebruikt om het verkeer te verminderen\nCaldav-bibliotheek herzien\nGoogle-functies uitbesteed in eigen lib\nFixed caldav bug die optrad wanneer de eindtijd ontbrak\nMeer foutopsporingsberichten toegevoegd",
-                "fr": "Ajout de la possibilité de charger des fichiers ics à partir de serveurs Web\nAjout d'une option pour ignorer les erreurs de certificat\nLa plage horaire de Caldav est utilisée pour réduire le trafic\nBibliothèque Caldav révisée\nFonctions Google externalisées dans sa propre bibliothèque\nCorrection d'un bug de caldav qui se produisait lorsque les heures de fin étaient manquantes\nAjout de plus de messages de débogage",
-                "it": "Aggiunta la possibilità di caricare file ics da server Web\nAggiunta opzione per ignorare gli errori del certificato\nL'intervallo di tempo di Caldav viene utilizzato per ridurre il traffico\nBiblioteca Caldav rivista\nFunzioni di Google esternalizzate nella propria lib\nRisolto bug caldav che si verificava quando mancavano i tempi di fine\nAggiunti altri messaggi di debug",
-                "es": "Posibilidad añadida de cargar archivos ics desde servidores web\nOpción agregada para ignorar errores de certificado\nEl rango de tiempo Caldav se usa para reducir el tráfico\nBiblioteca Caldav revisada\nFunciones de Google subcontratadas en su propia biblioteca\nSe corrigió el error de caldav que ocurría cuando faltaban los tiempos finales\nSe agregaron más mensajes de depuración",
-                "pl": "Dodano możliwość ładowania plików ics z serwerów internetowych\nDodano opcję ignorowania błędów certyfikatu\nZakres czasu Caldav służy do zmniejszenia ruchu\nZmieniono bibliotekę Caldav\nFunkcje Google zlecone na zewnątrz we własnej bibliotece\nNaprawiono błąd caldav, który pojawiał się, gdy brakowało czasów zakończenia\nDodano więcej wiadomości debugowania",
-                "zh-cn": "增加了从Web服务器加载ics文件的可能性\n添加了忽略证书错误的选项\n卡尔达夫（Caldav）时间范围用于减少流量\n修改Caldav库\nGoogle函数在自己的库中外包\n修复了缺少结束时间时发生的caldav错误\n添加了更多调试消息"
-            },
-            "1.1.2": {
-                "en": "#15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts\n#15 - Fixed a bug that caused a 'TypeError' message",
-                "de": "#15 - Ein schwerwiegender Fehler wurde behoben, der zu falschen Anmeldeinformationen für CalDav-Konten führte\n#15 - Ein Fehler wurde behoben, der eine 'TypeError'-Nachricht verursachte",
-                "ru": "#15 - Исправлена серьезная ошибка, которая приводила к неверным учетным данным для учетных записей CalDav\n#15 - Исправлена ошибка, приводившая к сообщению «TypeError»",
-                "pt": "#15 - Corrigido um bug sério que causava credenciais incorretas nas contas CalDav\n#15 - Corrigido um erro que causava uma mensagem 'TypeError'",
-                "nl": "#15 - Een ernstige bug opgelost die onjuiste inloggegevens voor CalDav-accounts veroorzaakte\n#15 - Een bug gerepareerd die een 'TypeError' bericht veroorzaakte",
-                "fr": "#15 - Correction d'un bug grave qui provoquait des informations d'identification incorrectes pour les comptes CalDav\n#15 - Correction d'un bug qui provoquait un message 'TypeError'",
-                "it": "#15 - Risolto un bug grave che causava credenziali errate per gli account CalDav\n#15 - Risolto un bug che causava un messaggio \"TypeError\"",
-                "es": "#15 - Se corrigió un error grave que causaba credenciales incorrectas para las cuentas de CalDav\n#15 - Se corrigió un error que causaba un mensaje 'TypeError'",
-                "pl": "#15 - Naprawiono poważny błąd, który powodował nieprawidłowe dane uwierzytelniające dla kont CalDav\n#15 - Naprawiono błąd, który powodował komunikat „TypeError”",
-                "zh-cn": "＃15-修复了一个严重的错误，该错误导致CalDav帐户的凭据不正确\n＃15-修复了导致“ TypeError”消息的错误"
-              },
-            "1.1.1": {
-                "en": "Password encryption added\nError messages for caldav lib extended\nFixed an issue that caused errors when reading null events",
-                "de": "Passwortverschlüsselung hinzugefügt\nFehlermeldungen für caldav lib erweitert\nEs wurde ein Problem behoben, das beim Lesen von Nullereignissen zu Fehlern führte",
-                "ru": "Добавлено шифрование пароля\nРасширено сообщение об ошибке для Caldav lib\nИсправлена ошибка, приводившая к ошибкам при чтении нулевых событий.",
-                "pt": "Criptografia de senha adicionada\nMensagens de erro para a caldav lib estendida\nCorrigido um problema que causava erros ao ler eventos nulos",
-                "nl": "Wachtwoordcodering toegevoegd\nFoutmeldingen voor caldav lib uitgebreid\nEen probleem opgelost dat fouten veroorzaakte bij het lezen van null-gebeurtenissen",
-                "fr": "Cryptage du mot de passe ajouté\nMessages d'erreur pour la bibliothèque caldav étendue\nCorrection d'un problème qui provoquait des erreurs lors de la lecture d'événements nuls",
-                "it": "Crittografia password aggiunta\nMessaggi di errore per caldav lib estesi\nRisolto il problema che causava errori durante la lettura di eventi null",
-                "es": "Cifrado de contraseña agregado\nMensajes de error para caldav lib extendidos\nSe solucionó un problema que causaba errores al leer eventos nulos",
-                "pl": "Dodano szyfrowanie hasłem\nRozszerzone komunikaty o błędach dla caldav lib\nNaprawiono błąd, który powodował błędy podczas odczytywania zdarzeń zerowych",
-                "zh-cn": "添加了密码加密\nCaldav lib扩展的错误消息\n修复了读取空事件时导致错误的问题"
-            },
-            "1.1.0": {
-                "en": "Caldav support expanded\niCal file support added",
-                "de": "Die Unterstützung von Caldav wurde erweitert\nUnterstützung für iCal-Dateien hinzugefügt",
-                "ru": "Поддержка Caldav расширена\nдобавлена поддержка файлов iCal",
-                "pt": "Suporte Caldav expandido\nSuporte ao arquivo iCal adicionado",
-                "nl": "Caldav-ondersteuning uitgebreid\nOndersteuning voor iCal-bestanden toegevoegd",
-                "fr": "Prise en charge de Caldav étendue\nAjout de la prise en charge des fichiers iCal",
-                "it": "Supporto Caldav ampliato\nAggiunto supporto file iCal",
-                "es": "Soporte Caldav expandido\nSoporte de archivos iCal agregado",
-                "pl": "Obsługa Caldav została rozszerzona\nDodano obsługę plików iCal",
-                "zh-cn": "卡尔达夫支持扩大\n添加了iCal文件支持"
-            },
-            "1.0.1": {
-                "en": "Missing dependency added",
-                "de": "Fehlende Abhängigkeit hinzugefügt",
-                "ru": "Добавлена недостающая зависимость",
-                "pt": "Dependência ausente adicionada",
-                "nl": "Ontbrekende afhankelijkheid toegevoegd",
-                "fr": "Dépendance manquante ajoutée",
-                "it": "Aggiunta dipendenza mancante",
-                "es": "Falta dependencia agregada",
-                "pl": "Dodano brakującą zależność",
-                "zh-cn": "缺少依赖项添加"
-            },
-            "1.0.0": {
-                "en": "Added caldav support\nMultiple calendars can be displayed in one widget\nAdded more widget settings\nState structure changed\nAppointments are now shown in the popup\nSome internal functions revised\nFixed an error when saving the authentication data",
-                "de": "Caldav-Unterstützung hinzugefügt\nIn einem Widget können mehrere Kalender angezeigt werden\nWeitere Widget-Einstellungen hinzugefügt\nStatestruktur geändert\nTermine werden jetzt im Popup angezeigt\nEinige interne Funktionen überarbeitet\nFehler beim Speichern der Authentifizierungsdaten behoben",
-                "ru": "Добавлена поддержка Caldav\nНесколько календарей могут отображаться в одном виджете\nДобавлены дополнительные настройки виджета\nГосударственное устройство изменилось\nНазначения теперь отображаются во всплывающем окне\nНекоторые внутренние функции пересмотрены\nИсправлена ошибка при сохранении данных аутентификации",
-                "pt": "Adicionado suporte ao caldav\nVários calendários podem ser exibidos em um widget\nAdicionadas mais configurações de widget\nEstrutura de estado alterada\nOs compromissos agora são mostrados no pop-up\nAlgumas funções internas revisadas\nCorrigido um erro ao salvar os dados de autenticação",
-                "nl": "Ondersteuning van caldav toegevoegd\nMeerdere agenda's kunnen in één widget worden weergegeven\nMeer widget-instellingen toegevoegd\nStaatsstructuur gewijzigd\nAfspraken worden nu getoond in de popup\nSommige interne functies herzien\nFout verholpen bij het opslaan van de authenticatiegegevens",
-                "fr": "Prise en charge de caldav ajoutée\nPlusieurs calendriers peuvent être affichés dans un widget\nAjout de plus de paramètres de widget\nLa structure de l'État a changé\nLes rendez-vous sont maintenant affichés dans la popup\nQuelques fonctions internes révisées\nCorrection d'une erreur lors de l'enregistrement des données d'authentification",
-                "it": "Aggiunto supporto caldav\nPiù calendari possono essere visualizzati in un widget\nAggiunte ulteriori impostazioni del widget\nLa struttura dello stato è cambiata\nGli appuntamenti sono ora mostrati nel popup\nAlcune funzioni interne sono state riviste\nRisolto un errore durante il salvataggio dei dati di autenticazione",
-                "es": "Se agregó soporte caldav\nSe pueden mostrar varios calendarios en un widget\nSe agregaron más configuraciones de widgets\nLa estructura del estado cambió\nLas citas ahora se muestran en la ventana emergente\nAlgunas funciones internas revisadas\nSe corrigió un error al guardar los datos de autenticación",
-                "pl": "Dodano obsługę caldav\nW jednym widżecie może być wyświetlanych wiele kalendarzy\nDodano więcej ustawień widżetów\nStruktura państwa uległa zmianie\nTerminy są teraz wyświetlane w wyskakującym okienku\nNiektóre funkcje wewnętrzne zostały zmienione\nNaprawiono błąd podczas zapisywania danych uwierzytelniających",
-                "zh-cn": "添加了caldav支持\n一个小部件中可以显示多个日历\n添加了更多小部件设置\n国家结构改变\n约会现在显示在弹出窗口中\n修改了一些内部功能\n修复了保存身份验证数据时的错误"
-            },
-            "0.2.0": {
-                "en": "Multiple calendar support for one account\nCalendar color is now supported\nCalender states color, name, account added\nCalendar name is set as the state name\nFixed an issue where the credentials were not properly controlled\nThe google calendar name and color will be adopted",
-                "de": "Unterstützung mehrerer Kalender für ein Konto\nKalenderfarbe wird jetzt unterstützt\nNeue Kalenderstates color, name und account\nDer Kalendername wird als Statename festgelegt\nEs wurde ein Problem behoben, bei dem die Anmeldeinformationen nicht richtig kontrolliert wurden\nDer Name und die Farbe des Google-Kalenders werden übernommen",
-                "ru": "Поддержка нескольких календарей для одного аккаунта\nЦвет календаря теперь поддерживается\nЦвета календарей, имя, учетная запись добавлены\nНазвание календаря устанавливается в качестве имени штата\nИсправлена ошибка, из-за которой учетные данные не контролировались должным образом\nНазвание и цвет календаря Google будут приняты",
-                "pt": "Suporte a vários calendários para uma conta\nA cor do calendário agora é suportada\nO calendário indica cor, nome e conta adicionados\nO nome do calendário é definido como o nome do estado\nCorrigido um problema em que as credenciais não eram controladas adequadamente\nO nome e a cor do calendário do Google serão adotados",
-                "nl": "Ondersteuning voor meerdere agenda's voor één account\nAgendakleur wordt nu ondersteund\nKalender vermeldt kleur, naam, account toegevoegd\nKalendernaam wordt ingesteld als de statusnaam\nProbleem opgelost waarbij de inloggegevens niet correct werden beheerd\nDe naam en kleur van de Google-agenda worden overgenomen",
-                "fr": "Prise en charge de plusieurs calendriers pour un seul compte\nLa couleur du calendrier est désormais prise en charge\nLe calendrier indique la couleur, le nom et le compte ajoutés\nLe nom du calendrier est défini comme le nom de l'état\nCorrection d'un problème où les informations d'identification n'étaient pas correctement contrôlées\nLe nom et la couleur du calendrier Google seront adoptés",
-                "it": "Supporto per più calendari per un account\nIl colore del calendario è ora supportato\nCalendario stati colore, nome, account aggiunto\nIl nome del calendario è impostato come nome dello stato\nRisolto il problema per cui le credenziali non erano controllate correttamente\nVerranno adottati il nome e il colore del calendario di Google",
-                "es": "Soporte de calendario múltiple para una cuenta\nEl color del calendario ahora es compatible\nCalendario indica color, nombre, cuenta agregada\nEl nombre del calendario se establece como el nombre del estado\nSe solucionó un problema por el cual las credenciales no se controlaban correctamente\nSe adoptarán el nombre y el color del calendario de Google.",
-                "pl": "Obsługa wielu kalendarzy dla jednego konta\nKolor kalendarza jest teraz obsługiwany\nKalendarz określa kolor, nazwę, konto dodane\nNazwa kalendarza jest ustawiona jako nazwa stanu\nNaprawiono problem polegający na tym, że poświadczenia nie były odpowiednio kontrolowane\nNazwa i kolor kalendarza google zostaną przyjęte",
-                "zh-cn": "一个帐户的多个日历支持\n现在支持日历颜色\n日历注明颜色，名称，添加的帐户\n日历名称设置为状态名称\n修复了凭据未正确控制的问题\nGoogle日历名称和颜色将被采用"
-            },
-            "0.1.0": {
-                "en": "Added calendar widget\nCron job and server will stopped on unload\nFixed an issue where not all states were deleted\nAdded some debug messages\nRemoved adapter from state settings\nFixed problem where series appointments were not loaded",
-                "de": "Kalender-Widget hinzugefügt\nCron-Job und Server werden beim beenden gestoppt\nEs wurde ein Problem behoben, bei dem nicht alle States gelöscht wurden.\nEinige Debug-Meldungen wurden hinzugefügt.\nAdapter aus Stateeinstellungen entfernt.\nProblem behoben, bei dem Serien-Terminen nicht geladen wurden",
-                "ru": "Добавлен виджет календаря\nЗадание Cron и сервер будет остановлен при выгрузке\nИсправлена проблема, при которой не все состояния были удалены\nДобавлены некоторые сообщения отладки\nУдален адаптер из настроек состояний\nИсправлена проблема, когда встречались серии не загружен",
-                "pt": "Adicionado widget de calendário\nO trabalho e o servidor de cron serão interrompidos ao descarregar\nCorrigido um problema em que nem todos os estados foram excluídos\nAdicionadas algumas mensagens de depuração\nAdaptador removido das configurações de estado\nCorrigido problema em que os compromissos em série eram não carregado",
-                "nl": "Agendawidget toegevoegd\nCron-taak en server worden gestopt bij uitladen\nProbleem opgelost waarbij niet alle statussen werden verwijderd\nEnkele foutopsporingsberichten toegevoegd\nAdapter verwijderd uit statusinstellingen\nProbleem opgelost waarbij reeksafspraken waren niet geladen",
-                "fr": "Widget de calendrier ajouté\nLe travail Cron et le serveur seront arrêtés au déchargement\nCorrection d'un problème où tous les états n'étaient pas supprimés\nAjout de certains messages de débogage\nSuppression de l'adaptateur des paramètres d'état\nProblème résolu où les rendez-vous en série étaient pas chargé",
-                "it": "Widget calendario aggiunto\nIl processo cron e il server si sono arrestati allo scaricamento\nRisolto un problema per cui non tutti gli stati venivano eliminati\nAggiunti alcuni messaggi di debug\nAdattatore rimosso dalle impostazioni dello stato\nRisolto problema in cui erano presenti gli appuntamenti della serie non caricato",
-                "es": "Se agregó un widget de calendario\nEl trabajo Cron y el servidor se detendrán al descargar\nSe corrigió un problema en el que no se borraban todos los estados\nSe agregaron algunos mensajes de depuración\nSe eliminó el adaptador de la configuración de estado\nSe solucionó el problema donde las citas en serie eran sin cargar",
-                "pl": "Dodano widżet kalendarza\nZadanie Cron i serwer zatrzymują się przy rozładowaniu\nNaprawiono problem polegający na tym, że nie wszystkie stany zostały usunięte\nDodano niektóre komunikaty debugowania\nUsunięto adapter z ustawień stanu\nNaprawiono problem polegający na tym, że spotkania nie załadowano",
-                "zh-cn": "添加了日历小部件\nCron作业，服务器将在卸载时停止\\\\ n修复了并非删除所有状态的问题\\\\ n添加了一些调试消息\\\\ n从状态设置中删除了适配器\\\\ n修复了序列约会的问题未加载"
-            },
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "zh-cn": "首次出版"
-            }
-        },
-        "title": "Calendar",
-        "titleLang": {
-            "en": "Calendar",
-            "de": "Kalender",
-            "ru": "Календарь",
-            "pt": "Calendário",
-            "nl": "Kalender",
-            "fr": "Calendrier",
-            "it": "Calendario",
-            "es": "Calendario",
-            "pl": "Kalendarz",
-            "zh-cn": "日历"
-        },
-        "desc": {
-            "en": "Read your google, caldav and ical calendar.",
-            "de": "Lesen Sie Ihren Google-, Caldav- und iCal-Kalender.",
-            "ru": "Читайте ваш Google, Caldav и ical календарь.",
-            "pt": "Leia o seu calendário google, caldav e ical.",
-            "nl": "Lees uw Google-, Caldav- en Iical-agenda.",
-            "fr": "Lisez votre calendrier google, caldav et ical.",
-            "it": "Leggi il tuo calendario google, caldav e ical.",
-            "es": "Lea su calendario de google, caldav e ical.",
-            "pl": "Przeczytaj swój google, caldav i kalendarz ical.",
-            "zh-cn": "阅读您的Google，caldav和ical日历。"
-        },
-        "authors": [
-            "WLAN-Kabel <wlan-kabel@outlook.de>"
-        ],
-        "keywords": [
-            "ioBroker",
-            "calendar",
-            "Smart Home",
-            "home automation",
-            "ical",
-            "caldav"
-        ],
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "main": "main.js",
-        "icon": "calendar.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/WLAN-Kabel/ioBroker.calendar/master/admin/calendar.png",
-        "readme": "https://github.com/WLAN-Kabel/ioBroker.calendar/blob/master/README.md",
-        "loglevel": "info",
-        "restartAdapters": [
-            "vis"
-        ],
-        "localLink": "%web_protocol%://%ip%:%web_port%",
-        "mode": "daemon",
-        "type": "date-and-time",
-        "compact": true,
-        "materialize": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "dependencies": [
-            {
-                "js-controller": ">=1.4.2"
-            },
-            "vis"
-        ]
+  "common": {
+    "name": "calendar",
+    "version": "1.2.0",
+    "news": {
+      "1.2.0": {
+        "en": "New iCal library to better read calendars and support future event writing functionality\nGoogle authorization changed\nical events with recurrence are now handled\nRegular request for new calendars added\nFixed a bug that caused a \"TypeError\" message on iCal calendars",
+        "de": "Neue iCal-Bibliothek zum besseren Lesen von Kalendern und zur Unterstützung zukünftiger Funktionen zum Schreiben von Ereignissen\nGoogle-Autorisierung geändert\niCal Ereignisse mit Wiederholung werden jetzt behandelt\nRegelmäßige Anfrage nach neuen Kalendern hinzugefügt\nEs wurde ein Fehler behoben, der eine \"TypeError\" -Nachricht in iCal-Kalendern verursachte",
+        "ru": "Новая библиотека iCal для лучшего чтения календарей и поддержки функций записи будущих событий\nАвторизация Google изменена\nРеальные события с повторением теперь обрабатываются\nДобавлен регулярный запрос на новые календари\nИсправлена ошибка, приводившая к появлению сообщения «TypeError» в календарях iCal",
+        "pt": "Nova biblioteca iCal para melhor ler calendários e dar suporte à funcionalidade de gravação de eventos futuros\nAutorização do Google alterada\neventos clínicos com recorrência agora são tratados\nSolicitação regular de novas agendas adicionada\nCorrigido um erro que causava uma mensagem \"TypeError\" nos calendários do iCal",
+        "nl": "Nieuwe iCal-bibliotheek om kalenders beter te lezen en toekomstige functionaliteit voor het schrijven van evenementen te ondersteunen\nGoogle-autorisatie gewijzigd\nical gebeurtenissen met herhaling worden nu afgehandeld\nRegelmatig verzoek om nieuwe kalenders toegevoegd\nEen bug gerepareerd die een \"TypeError\" -bericht veroorzaakte in iCal-kalenders",
+        "fr": "Nouvelle bibliothèque iCal pour une meilleure lecture des calendriers et la prise en charge de la fonctionnalité d'écriture d'événements futurs\nL'autorisation Google a changé\nLes événements cliniques avec récidive sont désormais gérés\nAjout d'une demande régulière de nouveaux calendriers\nCorrection d'un bug qui provoquait un message \"TypeError\" sur les calendriers iCal",
+        "it": "Nuova libreria iCal per leggere meglio i calendari e supportare la funzionalità di scrittura di eventi futuri\nL'autorizzazione di Google è cambiata\neventi gestionali con ricorrenza sono ora gestiti\nAggiunta richiesta regolare per nuovi calendari\nRisolto un bug che causava un messaggio \"TypeError\" sui calendari iCal",
+        "es": "Nueva biblioteca iCal para leer mejor los calendarios y admitir la funcionalidad de escritura de eventos futuros\nAutorización de Google modificada\nlos eventos icos con recurrencia ahora se manejan\nSolicitud regular para nuevos calendarios agregados\nSe corrigió un error que causaba un mensaje \"TypeError\" en los calendarios de iCal",
+        "pl": "Nowa biblioteka iCal do lepszego czytania kalendarzy i obsługi funkcji pisania przyszłych wydarzeń\nAutoryzacja Google uległa zmianie\nobsługiwane są teraz powtarzające się zdarzenia\nDodano regularne żądanie nowych kalendarzy\nNaprawiono błąd, który powodował komunikat „TypeError” w kalendarzach iCal",
+        "zh-cn": "新的iCal库可更好地阅读日历并支持将来的事件编写功能\nGoogle授权已更改\n现在可以处理重复发生的医疗事件\n定期要求添加新日历\n修复了导致iCal日历上出现“ TypeError”消息的错误"
+      },
+      "1.1.3": {
+        "en": "Added possibility to load ics files from web servers\nAdded option to ignore certificate errors\nCaldav time range is used to reduce traffic\nCaldav library revised\nGoogle functions outsourced in own lib\nFixed caldav bug that occurred when end times were missing\nAdded more debug messages",
+        "de": "Möglichkeit zum Laden von ICS-Dateien von Webservern hinzugefügt\nOption zum Ignorieren von Zertifikatfehlern hinzugefügt\nCalDAV 'time range' wird verwendet, um den Datenverkehr zu reduzieren\nCalDAV Bibliothek überarbeitet\nGoogle-Funktionen in eigene Bibliothek ausgelagert\nCalDAV-Fehler behoben, der auftrat, wenn Endzeiten fehlten\nWeitere Debug-Meldungen hinzugefügt",
+        "ru": "Добавлена возможность загрузки файлов ics с веб-серверов\nДобавлена возможность игнорировать ошибки сертификата\nCaldav временной диапазон используется для сокращения трафика\nБиблиотека Caldav переработана\nФункции Google переданы в собственную библиотеку\nИсправлена ошибка caldav, возникавшая при отсутствии времени окончания\nДобавлено больше отладочных сообщений",
+        "pt": "Possibilidade adicionada para carregar arquivos ics de servidores web\nAdicionada opção para ignorar erros de certificado\nO intervalo de tempo de Caldav é usado para reduzir o tráfego\nBiblioteca Caldav revisada\nFunções do Google terceirizadas em lib própria\nCorrigido o erro caldav que ocorria quando faltavam os horários de término\nAdicionadas mais mensagens de depuração",
+        "nl": "Mogelijkheid toegevoegd om ics-bestanden van webservers te laden\nOptie toegevoegd om certificaatfouten te negeren\nHet tijdsbereik van Caldav wordt gebruikt om het verkeer te verminderen\nCaldav-bibliotheek herzien\nGoogle-functies uitbesteed in eigen lib\nFixed caldav bug die optrad wanneer de eindtijd ontbrak\nMeer foutopsporingsberichten toegevoegd",
+        "fr": "Ajout de la possibilité de charger des fichiers ics à partir de serveurs Web\nAjout d'une option pour ignorer les erreurs de certificat\nLa plage horaire de Caldav est utilisée pour réduire le trafic\nBibliothèque Caldav révisée\nFonctions Google externalisées dans sa propre bibliothèque\nCorrection d'un bug de caldav qui se produisait lorsque les heures de fin étaient manquantes\nAjout de plus de messages de débogage",
+        "it": "Aggiunta la possibilità di caricare file ics da server Web\nAggiunta opzione per ignorare gli errori del certificato\nL'intervallo di tempo di Caldav viene utilizzato per ridurre il traffico\nBiblioteca Caldav rivista\nFunzioni di Google esternalizzate nella propria lib\nRisolto bug caldav che si verificava quando mancavano i tempi di fine\nAggiunti altri messaggi di debug",
+        "es": "Posibilidad añadida de cargar archivos ics desde servidores web\nOpción agregada para ignorar errores de certificado\nEl rango de tiempo Caldav se usa para reducir el tráfico\nBiblioteca Caldav revisada\nFunciones de Google subcontratadas en su propia biblioteca\nSe corrigió el error de caldav que ocurría cuando faltaban los tiempos finales\nSe agregaron más mensajes de depuración",
+        "pl": "Dodano możliwość ładowania plików ics z serwerów internetowych\nDodano opcję ignorowania błędów certyfikatu\nZakres czasu Caldav służy do zmniejszenia ruchu\nZmieniono bibliotekę Caldav\nFunkcje Google zlecone na zewnątrz we własnej bibliotece\nNaprawiono błąd caldav, który pojawiał się, gdy brakowało czasów zakończenia\nDodano więcej wiadomości debugowania",
+        "zh-cn": "增加了从Web服务器加载ics文件的可能性\n添加了忽略证书错误的选项\n卡尔达夫（Caldav）时间范围用于减少流量\n修改Caldav库\nGoogle函数在自己的库中外包\n修复了缺少结束时间时发生的caldav错误\n添加了更多调试消息"
+      },
+      "1.1.2": {
+        "en": "#15 - Fixed a serious bug that caused incorrect credentials for CalDav accounts\n#15 - Fixed a bug that caused a 'TypeError' message",
+        "de": "#15 - Ein schwerwiegender Fehler wurde behoben, der zu falschen Anmeldeinformationen für CalDav-Konten führte\n#15 - Ein Fehler wurde behoben, der eine 'TypeError'-Nachricht verursachte",
+        "ru": "#15 - Исправлена серьезная ошибка, которая приводила к неверным учетным данным для учетных записей CalDav\n#15 - Исправлена ошибка, приводившая к сообщению «TypeError»",
+        "pt": "#15 - Corrigido um bug sério que causava credenciais incorretas nas contas CalDav\n#15 - Corrigido um erro que causava uma mensagem 'TypeError'",
+        "nl": "#15 - Een ernstige bug opgelost die onjuiste inloggegevens voor CalDav-accounts veroorzaakte\n#15 - Een bug gerepareerd die een 'TypeError' bericht veroorzaakte",
+        "fr": "#15 - Correction d'un bug grave qui provoquait des informations d'identification incorrectes pour les comptes CalDav\n#15 - Correction d'un bug qui provoquait un message 'TypeError'",
+        "it": "#15 - Risolto un bug grave che causava credenziali errate per gli account CalDav\n#15 - Risolto un bug che causava un messaggio \"TypeError\"",
+        "es": "#15 - Se corrigió un error grave que causaba credenciales incorrectas para las cuentas de CalDav\n#15 - Se corrigió un error que causaba un mensaje 'TypeError'",
+        "pl": "#15 - Naprawiono poważny błąd, który powodował nieprawidłowe dane uwierzytelniające dla kont CalDav\n#15 - Naprawiono błąd, który powodował komunikat „TypeError”",
+        "zh-cn": "＃15-修复了一个严重的错误，该错误导致CalDav帐户的凭据不正确\n＃15-修复了导致“ TypeError”消息的错误"
+      },
+      "1.1.1": {
+        "en": "Password encryption added\nError messages for caldav lib extended\nFixed an issue that caused errors when reading null events",
+        "de": "Passwortverschlüsselung hinzugefügt\nFehlermeldungen für caldav lib erweitert\nEs wurde ein Problem behoben, das beim Lesen von Nullereignissen zu Fehlern führte",
+        "ru": "Добавлено шифрование пароля\nРасширено сообщение об ошибке для Caldav lib\nИсправлена ошибка, приводившая к ошибкам при чтении нулевых событий.",
+        "pt": "Criptografia de senha adicionada\nMensagens de erro para a caldav lib estendida\nCorrigido um problema que causava erros ao ler eventos nulos",
+        "nl": "Wachtwoordcodering toegevoegd\nFoutmeldingen voor caldav lib uitgebreid\nEen probleem opgelost dat fouten veroorzaakte bij het lezen van null-gebeurtenissen",
+        "fr": "Cryptage du mot de passe ajouté\nMessages d'erreur pour la bibliothèque caldav étendue\nCorrection d'un problème qui provoquait des erreurs lors de la lecture d'événements nuls",
+        "it": "Crittografia password aggiunta\nMessaggi di errore per caldav lib estesi\nRisolto il problema che causava errori durante la lettura di eventi null",
+        "es": "Cifrado de contraseña agregado\nMensajes de error para caldav lib extendidos\nSe solucionó un problema que causaba errores al leer eventos nulos",
+        "pl": "Dodano szyfrowanie hasłem\nRozszerzone komunikaty o błędach dla caldav lib\nNaprawiono błąd, który powodował błędy podczas odczytywania zdarzeń zerowych",
+        "zh-cn": "添加了密码加密\nCaldav lib扩展的错误消息\n修复了读取空事件时导致错误的问题"
+      },
+      "1.1.0": {
+        "en": "Caldav support expanded\niCal file support added",
+        "de": "Die Unterstützung von Caldav wurde erweitert\nUnterstützung für iCal-Dateien hinzugefügt",
+        "ru": "Поддержка Caldav расширена\nдобавлена поддержка файлов iCal",
+        "pt": "Suporte Caldav expandido\nSuporte ao arquivo iCal adicionado",
+        "nl": "Caldav-ondersteuning uitgebreid\nOndersteuning voor iCal-bestanden toegevoegd",
+        "fr": "Prise en charge de Caldav étendue\nAjout de la prise en charge des fichiers iCal",
+        "it": "Supporto Caldav ampliato\nAggiunto supporto file iCal",
+        "es": "Soporte Caldav expandido\nSoporte de archivos iCal agregado",
+        "pl": "Obsługa Caldav została rozszerzona\nDodano obsługę plików iCal",
+        "zh-cn": "卡尔达夫支持扩大\n添加了iCal文件支持"
+      },
+      "1.0.1": {
+        "en": "Missing dependency added",
+        "de": "Fehlende Abhängigkeit hinzugefügt",
+        "ru": "Добавлена недостающая зависимость",
+        "pt": "Dependência ausente adicionada",
+        "nl": "Ontbrekende afhankelijkheid toegevoegd",
+        "fr": "Dépendance manquante ajoutée",
+        "it": "Aggiunta dipendenza mancante",
+        "es": "Falta dependencia agregada",
+        "pl": "Dodano brakującą zależność",
+        "zh-cn": "缺少依赖项添加"
+      },
+      "1.0.0": {
+        "en": "Added caldav support\nMultiple calendars can be displayed in one widget\nAdded more widget settings\nState structure changed\nAppointments are now shown in the popup\nSome internal functions revised\nFixed an error when saving the authentication data",
+        "de": "Caldav-Unterstützung hinzugefügt\nIn einem Widget können mehrere Kalender angezeigt werden\nWeitere Widget-Einstellungen hinzugefügt\nStatestruktur geändert\nTermine werden jetzt im Popup angezeigt\nEinige interne Funktionen überarbeitet\nFehler beim Speichern der Authentifizierungsdaten behoben",
+        "ru": "Добавлена поддержка Caldav\nНесколько календарей могут отображаться в одном виджете\nДобавлены дополнительные настройки виджета\nГосударственное устройство изменилось\nНазначения теперь отображаются во всплывающем окне\nНекоторые внутренние функции пересмотрены\nИсправлена ошибка при сохранении данных аутентификации",
+        "pt": "Adicionado suporte ao caldav\nVários calendários podem ser exibidos em um widget\nAdicionadas mais configurações de widget\nEstrutura de estado alterada\nOs compromissos agora são mostrados no pop-up\nAlgumas funções internas revisadas\nCorrigido um erro ao salvar os dados de autenticação",
+        "nl": "Ondersteuning van caldav toegevoegd\nMeerdere agenda's kunnen in één widget worden weergegeven\nMeer widget-instellingen toegevoegd\nStaatsstructuur gewijzigd\nAfspraken worden nu getoond in de popup\nSommige interne functies herzien\nFout verholpen bij het opslaan van de authenticatiegegevens",
+        "fr": "Prise en charge de caldav ajoutée\nPlusieurs calendriers peuvent être affichés dans un widget\nAjout de plus de paramètres de widget\nLa structure de l'État a changé\nLes rendez-vous sont maintenant affichés dans la popup\nQuelques fonctions internes révisées\nCorrection d'une erreur lors de l'enregistrement des données d'authentification",
+        "it": "Aggiunto supporto caldav\nPiù calendari possono essere visualizzati in un widget\nAggiunte ulteriori impostazioni del widget\nLa struttura dello stato è cambiata\nGli appuntamenti sono ora mostrati nel popup\nAlcune funzioni interne sono state riviste\nRisolto un errore durante il salvataggio dei dati di autenticazione",
+        "es": "Se agregó soporte caldav\nSe pueden mostrar varios calendarios en un widget\nSe agregaron más configuraciones de widgets\nLa estructura del estado cambió\nLas citas ahora se muestran en la ventana emergente\nAlgunas funciones internas revisadas\nSe corrigió un error al guardar los datos de autenticación",
+        "pl": "Dodano obsługę caldav\nW jednym widżecie może być wyświetlanych wiele kalendarzy\nDodano więcej ustawień widżetów\nStruktura państwa uległa zmianie\nTerminy są teraz wyświetlane w wyskakującym okienku\nNiektóre funkcje wewnętrzne zostały zmienione\nNaprawiono błąd podczas zapisywania danych uwierzytelniających",
+        "zh-cn": "添加了caldav支持\n一个小部件中可以显示多个日历\n添加了更多小部件设置\n国家结构改变\n约会现在显示在弹出窗口中\n修改了一些内部功能\n修复了保存身份验证数据时的错误"
+      },
+      "0.2.0": {
+        "en": "Multiple calendar support for one account\nCalendar color is now supported\nCalender states color, name, account added\nCalendar name is set as the state name\nFixed an issue where the credentials were not properly controlled\nThe google calendar name and color will be adopted",
+        "de": "Unterstützung mehrerer Kalender für ein Konto\nKalenderfarbe wird jetzt unterstützt\nNeue Kalenderstates color, name und account\nDer Kalendername wird als Statename festgelegt\nEs wurde ein Problem behoben, bei dem die Anmeldeinformationen nicht richtig kontrolliert wurden\nDer Name und die Farbe des Google-Kalenders werden übernommen",
+        "ru": "Поддержка нескольких календарей для одного аккаунта\nЦвет календаря теперь поддерживается\nЦвета календарей, имя, учетная запись добавлены\nНазвание календаря устанавливается в качестве имени штата\nИсправлена ошибка, из-за которой учетные данные не контролировались должным образом\nНазвание и цвет календаря Google будут приняты",
+        "pt": "Suporte a vários calendários para uma conta\nA cor do calendário agora é suportada\nO calendário indica cor, nome e conta adicionados\nO nome do calendário é definido como o nome do estado\nCorrigido um problema em que as credenciais não eram controladas adequadamente\nO nome e a cor do calendário do Google serão adotados",
+        "nl": "Ondersteuning voor meerdere agenda's voor één account\nAgendakleur wordt nu ondersteund\nKalender vermeldt kleur, naam, account toegevoegd\nKalendernaam wordt ingesteld als de statusnaam\nProbleem opgelost waarbij de inloggegevens niet correct werden beheerd\nDe naam en kleur van de Google-agenda worden overgenomen",
+        "fr": "Prise en charge de plusieurs calendriers pour un seul compte\nLa couleur du calendrier est désormais prise en charge\nLe calendrier indique la couleur, le nom et le compte ajoutés\nLe nom du calendrier est défini comme le nom de l'état\nCorrection d'un problème où les informations d'identification n'étaient pas correctement contrôlées\nLe nom et la couleur du calendrier Google seront adoptés",
+        "it": "Supporto per più calendari per un account\nIl colore del calendario è ora supportato\nCalendario stati colore, nome, account aggiunto\nIl nome del calendario è impostato come nome dello stato\nRisolto il problema per cui le credenziali non erano controllate correttamente\nVerranno adottati il nome e il colore del calendario di Google",
+        "es": "Soporte de calendario múltiple para una cuenta\nEl color del calendario ahora es compatible\nCalendario indica color, nombre, cuenta agregada\nEl nombre del calendario se establece como el nombre del estado\nSe solucionó un problema por el cual las credenciales no se controlaban correctamente\nSe adoptarán el nombre y el color del calendario de Google.",
+        "pl": "Obsługa wielu kalendarzy dla jednego konta\nKolor kalendarza jest teraz obsługiwany\nKalendarz określa kolor, nazwę, konto dodane\nNazwa kalendarza jest ustawiona jako nazwa stanu\nNaprawiono problem polegający na tym, że poświadczenia nie były odpowiednio kontrolowane\nNazwa i kolor kalendarza google zostaną przyjęte",
+        "zh-cn": "一个帐户的多个日历支持\n现在支持日历颜色\n日历注明颜色，名称，添加的帐户\n日历名称设置为状态名称\n修复了凭据未正确控制的问题\nGoogle日历名称和颜色将被采用"
+      },
+      "0.1.0": {
+        "en": "Added calendar widget\nCron job and server will stopped on unload\nFixed an issue where not all states were deleted\nAdded some debug messages\nRemoved adapter from state settings\nFixed problem where series appointments were not loaded",
+        "de": "Kalender-Widget hinzugefügt\nCron-Job und Server werden beim beenden gestoppt\nEs wurde ein Problem behoben, bei dem nicht alle States gelöscht wurden.\nEinige Debug-Meldungen wurden hinzugefügt.\nAdapter aus Stateeinstellungen entfernt.\nProblem behoben, bei dem Serien-Terminen nicht geladen wurden",
+        "ru": "Добавлен виджет календаря\nЗадание Cron и сервер будет остановлен при выгрузке\nИсправлена проблема, при которой не все состояния были удалены\nДобавлены некоторые сообщения отладки\nУдален адаптер из настроек состояний\nИсправлена проблема, когда встречались серии не загружен",
+        "pt": "Adicionado widget de calendário\nO trabalho e o servidor de cron serão interrompidos ao descarregar\nCorrigido um problema em que nem todos os estados foram excluídos\nAdicionadas algumas mensagens de depuração\nAdaptador removido das configurações de estado\nCorrigido problema em que os compromissos em série eram não carregado",
+        "nl": "Agendawidget toegevoegd\nCron-taak en server worden gestopt bij uitladen\nProbleem opgelost waarbij niet alle statussen werden verwijderd\nEnkele foutopsporingsberichten toegevoegd\nAdapter verwijderd uit statusinstellingen\nProbleem opgelost waarbij reeksafspraken waren niet geladen",
+        "fr": "Widget de calendrier ajouté\nLe travail Cron et le serveur seront arrêtés au déchargement\nCorrection d'un problème où tous les états n'étaient pas supprimés\nAjout de certains messages de débogage\nSuppression de l'adaptateur des paramètres d'état\nProblème résolu où les rendez-vous en série étaient pas chargé",
+        "it": "Widget calendario aggiunto\nIl processo cron e il server si sono arrestati allo scaricamento\nRisolto un problema per cui non tutti gli stati venivano eliminati\nAggiunti alcuni messaggi di debug\nAdattatore rimosso dalle impostazioni dello stato\nRisolto problema in cui erano presenti gli appuntamenti della serie non caricato",
+        "es": "Se agregó un widget de calendario\nEl trabajo Cron y el servidor se detendrán al descargar\nSe corrigió un problema en el que no se borraban todos los estados\nSe agregaron algunos mensajes de depuración\nSe eliminó el adaptador de la configuración de estado\nSe solucionó el problema donde las citas en serie eran sin cargar",
+        "pl": "Dodano widżet kalendarza\nZadanie Cron i serwer zatrzymują się przy rozładowaniu\nNaprawiono problem polegający na tym, że nie wszystkie stany zostały usunięte\nDodano niektóre komunikaty debugowania\nUsunięto adapter z ustawień stanu\nNaprawiono problem polegający na tym, że spotkania nie załadowano",
+        "zh-cn": "添加了日历小部件\nCron作业，服务器将在卸载时停止\\\\ n修复了并非删除所有状态的问题\\\\ n添加了一些调试消息\\\\ n从状态设置中删除了适配器\\\\ n修复了序列约会的问题未加载"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "port": 8095,
-        "googleActive": false,
-        "googleClientID": "",
-        "googleClientSecret": "",
-        "caldavActive": false,
-        "fqdn": "localhost",
-        "google": [
-            {
-                "active": false,
-                "name": "",
-                "id": "",
-                "email": "",
-                "account": "",
-                "accessToken": "",
-                "refreshToken": "",
-                "ctag": "",
-                "days": 7,
-                "color": "#000000",
-                "code": "",
-                "main": ""
-            }
-        ],
-        "caldav": [
-            {
-                "active": false,
-                "name": "",
-                "id": "",
-                "hostname": "https://caldav.example.com",
-                "username": "max.mustermann@example.com",
-                "password": "2SS8W2Zve34nWZzt",
-                "ctag": "",
-                "days": 7,
-                "color": "#000000",
-                "path": "",
-                "listIsLoaded": false,
-                "ignoreCertificateErrors": false,
-                "main": ""
-            }
-        ]
+    "title": "Calendar",
+    "titleLang": {
+      "en": "Calendar",
+      "de": "Kalender",
+      "ru": "Календарь",
+      "pt": "Calendário",
+      "nl": "Kalender",
+      "fr": "Calendrier",
+      "it": "Calendario",
+      "es": "Calendario",
+      "pl": "Kalendarz",
+      "zh-cn": "日历"
     },
-    "objects": [],
-    "instanceObjects": []
+    "desc": {
+      "en": "Read your google, caldav and ical calendar.",
+      "de": "Lesen Sie Ihren Google-, Caldav- und iCal-Kalender.",
+      "ru": "Читайте ваш Google, Caldav и ical календарь.",
+      "pt": "Leia o seu calendário google, caldav e ical.",
+      "nl": "Lees uw Google-, Caldav- en Iical-agenda.",
+      "fr": "Lisez votre calendrier google, caldav et ical.",
+      "it": "Leggi il tuo calendario google, caldav e ical.",
+      "es": "Lea su calendario de google, caldav e ical.",
+      "pl": "Przeczytaj swój google, caldav i kalendarz ical.",
+      "zh-cn": "阅读您的Google，caldav和ical日历。"
+    },
+    "authors": [
+      "WLAN-Kabel <wlan-kabel@outlook.de>"
+    ],
+    "keywords": [
+      "ioBroker",
+      "calendar",
+      "Smart Home",
+      "home automation",
+      "ical",
+      "caldav"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "icon": "calendar.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/WLAN-Kabel/ioBroker.calendar/master/admin/calendar.png",
+    "readme": "https://github.com/WLAN-Kabel/ioBroker.calendar/blob/master/README.md",
+    "loglevel": "info",
+    "restartAdapters": [
+      "vis"
+    ],
+    "localLink": "%web_protocol%://%ip%:%web_port%",
+    "mode": "daemon",
+    "type": "date-and-time",
+    "compact": true,
+    "materialize": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      },
+      "vis"
+    ]
+  },
+  "native": {
+    "port": 8095,
+    "googleActive": false,
+    "googleClientID": "",
+    "googleClientSecret": "",
+    "caldavActive": false,
+    "fqdn": "localhost",
+    "google": [
+      {
+        "active": false,
+        "name": "",
+        "id": "",
+        "email": "",
+        "account": "",
+        "accessToken": "",
+        "refreshToken": "",
+        "ctag": "",
+        "days": 7,
+        "color": "#000000",
+        "code": "",
+        "main": ""
+      }
+    ],
+    "caldav": [
+      {
+        "active": false,
+        "name": "",
+        "id": "",
+        "hostname": "https://caldav.example.com",
+        "username": "max.mustermann@example.com",
+        "password": "2SS8W2Zve34nWZzt",
+        "ctag": "",
+        "days": 7,
+        "color": "#000000",
+        "path": "",
+        "listIsLoaded": false,
+        "ignoreCertificateErrors": false,
+        "main": ""
+      }
+    ]
+  },
+  "objects": [],
+  "instanceObjects": []
 }
