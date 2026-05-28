@@ -77,6 +77,10 @@ Enter the file path on the CalDav tab in the hostname field.
 
 ## Changelog
 
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 1.2.0 (2020-04-11)
 * (WLAN-Kabel) #24 - New iCal library to better read calendars and support future event writing functionality
 * (WLAN-Kabel) Google authorization changed
